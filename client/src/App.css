@@ -1,0 +1,12 @@
+.board {
+  border: thin solid grey;
+}
+
+.row {
+  display: flex;
+  flex-wrap: nowrap;
+}
+
+/* .cell {
+  border: thin solid grey;
+} */
