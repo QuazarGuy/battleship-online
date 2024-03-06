@@ -88,8 +88,8 @@ type NotationProps = {
   }
   
   const numericStyle = (width: number, customNotationStyle?: Record<string, string | number>) => ({
-    alignSelf: "flex-end",
-    paddingLeft: width / 32 - width / 48,
+    alignSelf: "center",
+    // paddingLeft: width / 32 - width / 48,
     // paddingRight: width / 32 - width / 48,
     fontSize: width / 16,
     ...customNotationStyle

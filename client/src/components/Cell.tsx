@@ -1,5 +1,6 @@
 import { useContext, useState } from "react";
 import { BoardContext } from "../context/board-context";
+import { socket } from "../socket";
 
 interface Props {
   children: React.ReactNode;
@@ -20,15 +21,38 @@ const COLORS = Object.freeze(
 );
 
 export function Cell({ cellid, boardWidth, colCount, children }: Props) {
-  const ship = useContext(BoardContext);
-  const [state, setState] = useState(String);
+  // const ship = useContext(BoardContext);
+  const [state, setState] = useState("empty");
   const [hover, setHover] = useState(false);
 
-  function handleClick() {
-    if (ship) {
-      setState("hit");
+  async function handleClick() {
+    if (state === "empty") {
+      let isShip = false;
+      try {
+        socket.emit("move", cellid);
+        isShip = await new Promise((resolve, reject) => {
+          socket.once("move", (data) => {
+            if (data.cellid !== cellid) {
+              reject(
+                new Error(
+                  "data.cellid " + data.cellid + " !== cellid " + cellid
+                )
+              );
+            }
+            resolve(data.isShip);
+          });
+        });
+      } catch (error) {
+        console.log(error);
+      }
+      console.log("isShip", isShip);
+      if (isShip) {
+        setState("hit");
+      } else {
+        setState("miss");
+      }
     } else {
-      setState("miss"); 
+      console.log("cell already clicked");
     }
   }
 
