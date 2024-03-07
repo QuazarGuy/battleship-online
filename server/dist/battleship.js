@@ -1,4 +1,12 @@
 "use strict";
+// DONE: maintain state to dedupe moves
+// TODO: reset button
+// TODO: turns
+// TODO: 2 players
+// TODO: introduce setup phase
+// TODO: validate ship placement
+// TODO: check sunk ship
+// TODO: check winner
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Player = exports.Game = void 0;
 class Game {
@@ -22,25 +30,47 @@ class Game {
         }
     }
     _generateBoard() {
-        let board = {};
-        let index = "";
+        let board = new Map();
+        let key = "";
         for (let row = 0; row < this.rows; row++) {
             for (let col = 0; col < this.cols; col++) {
-                index = `${String.fromCharCode("A".charCodeAt(0) + row)}-${(col + 1).toString()}`;
-                console.log(index);
-                board[index] = "empty";
+                key = `${String.fromCharCode("A".charCodeAt(0) + row)}-${(col + 1).toString()}`;
+                console.log(key);
+                board.set(key, "empty");
             }
         }
-        board["C-4"] = "ship";
+        // TODO Remove when done testing
+        board.set("C-4", "ship");
         return board;
     }
     async move(data, responder) {
-        await new Promise((r) => setTimeout(r, 1000));
-        responder("move", {
-            isShip: data === "C-4",
-            cellid: data,
-        });
-        console.log("ship", data === "C-4");
+        // For testing lag
+        // await new Promise((r) => setTimeout(r, 1000));
+        let board = this.players[0].board;
+        if (board.has(data)) {
+            switch (board.get(data)) {
+                case "empty":
+                    board.set(data, "miss");
+                    break;
+                case "ship":
+                    board.set(data, "hit");
+                    break;
+                default:
+                    responder("move", {
+                        error: "invalid move - cell already attacked",
+                    });
+                    return;
+            }
+            responder("move", {
+                status: board.get(data),
+                cellid: data,
+            });
+        }
+        else {
+            responder("move", {
+                error: "invalid move",
+            });
+        }
     }
 }
 exports.Game = Game;
@@ -49,7 +79,7 @@ class Player {
     board;
     constructor(name) {
         this.name = name;
-        this.board = {};
+        this.board = new Map();
     }
 }
 exports.Player = Player;

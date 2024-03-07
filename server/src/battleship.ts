@@ -1,5 +1,4 @@
-// TODO: validate moves
-// TODO: maintain state to dedupe moves
+// DONE: maintain state to dedupe moves
 // TODO: reset button
 // TODO: turns
 // TODO: 2 players
@@ -30,8 +29,8 @@ class Game {
     }
   }
 
-  _generateBoard(): { [key: string]: string } {
-    let board: { [key: string]: string } = {};
+  _generateBoard(): Map<string, string> {
+    let board: Map<string, string> = new Map();
     let key = "";
     for (let row = 0; row < this.rows; row++) {
       for (let col = 0; col < this.cols; col++) {
@@ -42,7 +41,8 @@ class Game {
         board.set(key, "empty");
       }
     }
-    board["C-4"] = "ship";
+    // TODO Remove when done testing
+    board.set("C-4", "ship");
     return board;
   }
 
@@ -52,21 +52,40 @@ class Game {
   ) {
     // For testing lag
     // await new Promise((r) => setTimeout(r, 1000));
-    if (this.players[0].board.has(data))
-    responder("move", {
-      isShip: data === "C-4",
-      cellid: data,
-    });
-    console.log("ship", data === "C-4");
+    let board = this.players[0].board;
+    if (board.has(data)) {
+      switch (board.get(data)) {
+        case "empty":
+          board.set(data, "miss");
+          break;
+        case "ship":
+          board.set(data, "hit");
+          break;
+        default:
+          responder("move", {
+            error: "invalid move - cell already attacked",
+          });
+          return;
+      }
+
+      responder("move", {
+        status: board.get(data),
+        cellid: data,
+      });
+    } else {
+      responder("move", {
+        error: "invalid move",
+      });
+    }
   }
 }
 
 class Player {
   name: string;
-  board: { [key: string]: string };
+  board: Map<string, string>;
   constructor(name: string) {
     this.name = name;
-    this.board = {};
+    this.board = new Map();
   }
 }
 

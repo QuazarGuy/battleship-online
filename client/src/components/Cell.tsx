@@ -26,36 +26,33 @@ export function Cell({ cellid, boardWidth, colCount, children }: Props) {
   const [hover, setHover] = useState(false);
 
   async function handleClick() {
-    if (state === "empty") {
-      let isShip = false;
+    if (state !== "empty") {
+      console.log("cell already clicked");
+    } else {
+      let status = "";
       try {
         socket.emit("move", cellid);
-        isShip = await new Promise((resolve, reject) => {
-          // Socket names are global, temporarily create a socket for this 
+        status = await new Promise((resolve, reject) => {
+          // Socket names are global, temporarily create a socket for this
           // cell. Moves can't be spammed for normal users if we check cellid.
           socket.once("move", (data) => {
-            if (data.cellid !== cellid) {
+            if (data.error) {
+              reject(new Error(data.error));
+            } else if (data.cellid !== cellid) {
               reject(
                 new Error(
                   "data.cellid " + data.cellid + " !== cellid " + cellid
                 )
               );
             }
-            resolve(data.isShip);
+            resolve(data.status);
           });
         });
       } catch (error) {
         console.log(error);
         return;
       }
-      console.log("isShip", isShip);
-      if (isShip) {
-        setState("hit");
-      } else {
-        setState("miss");
-      }
-    } else {
-      console.log("cell already clicked");
+      setState(status);      
     }
   }
 

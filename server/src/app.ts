@@ -1,3 +1,6 @@
+// TODO add room and table support
+// TODO add account support
+
 import express from 'express';
 import { Server } from 'socket.io';
 import { Game, Player } from './battleship';

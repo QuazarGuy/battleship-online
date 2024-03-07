@@ -31,9 +31,9 @@ function App() {
     <>
       <ConnectionState isConnected={ isConnected } />
       <ConnectionManager />
-      <Board id="board" boardWidth={400} rows={5} cols={10} />
+      <Board id="board" boardWidth={400} rows={5} cols={5} />
       <div style={{ height: 20 }} />
-      <Board id="board2" boardWidth={400} rows={5} cols={10} />
+      <Board id="board2" boardWidth={400} rows={5} cols={5} />
     </>
   );
 }
