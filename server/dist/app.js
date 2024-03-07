@@ -5,6 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const socket_io_1 = require("socket.io");
+const battleship_1 = require("./battleship");
 const app = (0, express_1.default)();
 const port = 3000;
 const io = new socket_io_1.Server({
@@ -21,28 +22,15 @@ app.listen(port, () => {
 });
 io.on('connection', (socket) => {
     console.log('user ' + socket.id + ' connected');
-    socket.on('attack', (data) => {
-        console.log('attack', data);
-        wait(data);
+    const game = new battleship_1.Game(new battleship_1.Player(socket.id), 5, 10);
+    socket.on('move', (data) => {
+        console.log('move', data);
+        game.move(data, responder);
     });
     socket.on('disconnect', () => {
         console.log('user ' + socket.id + ' disconnected');
     });
-    async function wait(data) {
-        await new Promise(r => setTimeout(r, 1000));
-        if (data === 'C-4') {
-            socket.emit('attack', {
-                isShip: true,
-                cellid: data
-            });
-            console.log('ship', true);
-        }
-        else {
-            socket.emit('attack', {
-                isShip: false,
-                cellid: data
-            });
-            console.log('ship', false);
-        }
+    function responder(operation, data) {
+        socket.emit(operation, data);
     }
 });

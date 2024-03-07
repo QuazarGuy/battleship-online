@@ -31,6 +31,8 @@ export function Cell({ cellid, boardWidth, colCount, children }: Props) {
       try {
         socket.emit("move", cellid);
         isShip = await new Promise((resolve, reject) => {
+          // Socket names are global, temporarily create a socket for this 
+          // cell. Moves can't be spammed for normal users if we check cellid.
           socket.once("move", (data) => {
             if (data.cellid !== cellid) {
               reject(
@@ -44,6 +46,7 @@ export function Cell({ cellid, boardWidth, colCount, children }: Props) {
         });
       } catch (error) {
         console.log(error);
+        return;
       }
       console.log("isShip", isShip);
       if (isShip) {

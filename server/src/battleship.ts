@@ -1,3 +1,13 @@
+// TODO: validate moves
+// TODO: maintain state to dedupe moves
+// TODO: reset button
+// TODO: turns
+// TODO: 2 players
+// TODO: introduce setup phase
+// TODO: validate ship placement
+// TODO: check sunk ship
+// TODO: check winner
+
 class Game {
   players: Player[];
   // let turn = 0;
@@ -22,14 +32,14 @@ class Game {
 
   _generateBoard(): { [key: string]: string } {
     let board: { [key: string]: string } = {};
-    let index = "";
+    let key = "";
     for (let row = 0; row < this.rows; row++) {
       for (let col = 0; col < this.cols; col++) {
-        index = `${String.fromCharCode("A".charCodeAt(0) + row)}-${(
+        key = `${String.fromCharCode("A".charCodeAt(0) + row)}-${(
           col + 1
         ).toString()}`;
-        console.log(index);
-        board[index] = "empty";
+        console.log(key);
+        board.set(key, "empty");
       }
     }
     board["C-4"] = "ship";
@@ -40,7 +50,9 @@ class Game {
     data: string,
     responder: (operation: string, data: object) => void
   ) {
-    await new Promise((r) => setTimeout(r, 1000));
+    // For testing lag
+    // await new Promise((r) => setTimeout(r, 1000));
+    if (this.players[0].board.has(data))
     responder("move", {
       isShip: data === "C-4",
       cellid: data,
