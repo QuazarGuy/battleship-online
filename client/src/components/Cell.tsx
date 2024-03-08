@@ -9,6 +9,7 @@ interface Props {
   ship: boolean;
   boardWidth: number;
   colCount: number;
+  onMove?: () => void;
 }
 
 const COLORS = Object.freeze(
@@ -20,7 +21,7 @@ const COLORS = Object.freeze(
   ])
 );
 
-export function Cell({ cellid, boardWidth, colCount, children }: Props) {
+export function Cell({ cellid, boardWidth, colCount, children, onMove = () => {} }: Props) {
   // const ship = useContext(BoardContext);
   const [state, setState] = useState("empty");
   const [hover, setHover] = useState(false);
@@ -66,7 +67,7 @@ export function Cell({ cellid, boardWidth, colCount, children }: Props) {
         width: boardWidth / colCount,
         height: boardWidth / colCount,
       }}
-      onClick={handleClick}
+      onClick={onMove}
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
     >

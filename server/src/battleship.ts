@@ -14,7 +14,7 @@ class Game {
   cols = 10;
 
   constructor(player: Player, rows = 5, cols = 10) {
-    player.board = this._generateBoard();
+    player.board = this.#generateBoard();
     this.players = [player];
     this.rows = rows;
     this.cols = cols;
@@ -29,7 +29,7 @@ class Game {
     }
   }
 
-  _generateBoard(): Map<string, string> {
+  #generateBoard(): Map<string, string> {
     let board: Map<string, string> = new Map();
     let key = "";
     for (let row = 0; row < this.rows; row++) {

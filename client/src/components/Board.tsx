@@ -7,9 +7,16 @@ interface Props {
   boardWidth: number;
   rows: number;
   cols: number;
+  onMove?: () => void;
 }
 
-export function Board({ id, boardWidth, rows = 9, cols = 9 }: Props) {
+export function Board({
+  id,
+  boardWidth,
+  rows = 9,
+  cols = 9,
+  onMove = () => {},
+}: Props) {
   const showBoardNotation = true;
   return (
     <div key={id} className="board">
@@ -26,8 +33,18 @@ export function Board({ id, boardWidth, rows = 9, cols = 9 }: Props) {
             {[...Array(cols)].map((_, c) => {
               const col = getColumn(c);
               return (
-                <Cell key={`${row}-${col}`} cellid={`${row}-${col}`} state="empty" ship={row === "C" && col === "4" ? true : false} boardWidth={boardWidth} colCount={cols}>
-                  {showBoardNotation && <Notation row={row} col={col} boardWidth={boardWidth} />}
+                <Cell
+                  key={`${row}-${col}`}
+                  cellid={`${row}-${col}`}
+                  state="empty"
+                  ship={row === "C" && col === "4" ? true : false}
+                  boardWidth={boardWidth}
+                  colCount={cols}
+                  onMove={onMove}
+                >
+                  {showBoardNotation && (
+                    <Notation row={row} col={col} boardWidth={boardWidth} />
+                  )}
                 </Cell>
               );
             })}

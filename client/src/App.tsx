@@ -1,8 +1,10 @@
+// https://blog.openreplay.com/building-a-chess-game-with-react/
+
 import { useState, useEffect } from "react";
 import { socket } from "./socket";
 import { ConnectionState } from './components/ConnectionState';
 import { ConnectionManager } from './components/ConnectionManager';
-import { Board } from "./components/Board";
+import { Game } from "./components/Game";
 
 function App() {
   const [isConnected, setIsConnected] = useState(socket.connected);
@@ -31,9 +33,7 @@ function App() {
     <>
       <ConnectionState isConnected={ isConnected } />
       <ConnectionManager />
-      <Board id="board" boardWidth={400} rows={5} cols={5} />
-      <div style={{ height: 20 }} />
-      <Board id="board2" boardWidth={400} rows={5} cols={5} />
+      <Game />
     </>
   );
 }
