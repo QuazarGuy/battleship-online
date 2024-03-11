@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { socket } from "./socket";
 import { ConnectionState } from './components/ConnectionState';
 import { ConnectionManager } from './components/ConnectionManager';
-import { Game } from "./components/Game";
+import Game from "./components/Game";
 
 function App() {
   const [isConnected, setIsConnected] = useState(socket.connected);
@@ -33,7 +33,7 @@ function App() {
     <>
       <ConnectionState isConnected={ isConnected } />
       <ConnectionManager />
-      <Game />
+      <Game player="Bob" opponent="Alice" room="1" orientation="0" />
     </>
   );
 }

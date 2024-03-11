@@ -4,6 +4,7 @@ import { getRow, getColumn } from "../utils/consts";
 
 interface Props {
   id: string;
+  boardState: string[][];
   boardWidth: number;
   rows: number;
   cols: number;
