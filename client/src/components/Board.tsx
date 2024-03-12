@@ -8,7 +8,7 @@ interface Props {
   boardWidth: number;
   rows: number;
   cols: number;
-  onMove?: () => void;
+  onMove: (cellid: string) => string[][];
 }
 
 export function Board({
@@ -16,7 +16,7 @@ export function Board({
   boardWidth,
   rows = 9,
   cols = 9,
-  onMove = () => {},
+  onMove,
 }: Props) {
   const showBoardNotation = true;
   return (
@@ -41,7 +41,7 @@ export function Board({
                   ship={row === "C" && col === "4" ? true : false}
                   boardWidth={boardWidth}
                   colCount={cols}
-                  onMove={onMove}
+                  onMove={() => onMove(`${row}-${col}`)}
                 >
                   {showBoardNotation && (
                     <Notation row={row} col={col} boardWidth={boardWidth} />

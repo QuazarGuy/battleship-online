@@ -33,7 +33,7 @@ function App() {
     <>
       <ConnectionState isConnected={ isConnected } />
       <ConnectionManager />
-      <Game player="Bob" opponent="Alice" room="1" orientation="0" />
+      <Game player="Bob" opponent="Alice" room="1" orientation={0} />
     </>
   );
 }

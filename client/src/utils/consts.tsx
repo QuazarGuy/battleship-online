@@ -13,3 +13,8 @@ export function getColumn(col: number): string {
 export function getRow(row: number): string {
     return String.fromCharCode("A".charCodeAt(0) + row);
 }
+
+export function getCoords(cell: string): [number, number] {
+    const [row, col] = cell.split("-");
+    return [row.charCodeAt(0) - "A".charCodeAt(0), parseInt(col)];
+}
