@@ -28,8 +28,13 @@ io.on('connection', (socket) => {
   console.log('user ' + socket.id + ' connected');
   const game = new Game(new Player(socket.id), 5, 10);
 
+  socket.on('username', (data) => {
+    console.log('username:', data);
+    socket.data.username = data;
+  })
+
   socket.on('move', (data) => {
-    console.log('move', data);
+    console.log('move:', data);
     game.move(data, responder);
   })
 

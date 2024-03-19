@@ -41,6 +41,7 @@ function App() {
         contentText = "Please select a username"
         handleContinue = {() => {
           if (!username) return;
+          console.log("username: ", username);
           socket.emit("username", username);
           setUsernameSumbitted(true);
         }}
@@ -60,8 +61,8 @@ function App() {
         />
       </CustomDialog>
       <ConnectionState isConnected={ isConnected } />
-      <ConnectionManager />
-      <Game player="Bob" opponent="Alice" room="1" orientation={0} />
+      {/* <ConnectionManager /> */}
+      <Game player={username} opponent="Alice" />
     </>
   );
 }
