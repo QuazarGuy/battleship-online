@@ -23,7 +23,8 @@ class Battleship {
       .map(() => Array(cols).fill("empty"));
   }
 
-  move(moveData: {target: string, turn: string}): string[][] {
+  move(moveData: { target: string; turn: string }): string[][] {
+    console.log("battleship", moveData);
     const [row, col] = getCoords(moveData.target);
     if (this.#setupPhase || this.#turn !== this.orientation) {
       console.log("not your turn");
@@ -40,10 +41,12 @@ class Battleship {
     // TODO: Add server check for ship
     this.#opponentBoard[row][col] =
       this.#opponentBoard[row][col] === "ship" ? "hit" : "miss";
-    this.#turn = this.#turn === "p" ? "o" : "p";
+    console.log(this.#opponentBoard[row][col]);
+    // this.#turn = this.#turn === "p" ? "o" : "p";
+    console.log(this.#turn);
     return this.#opponentBoard;
 
-        // if (state !== "empty") {
+    // if (state !== "empty") {
     //   console.log("cell already clicked");
     //   return {
     //     cellid: cellid,
@@ -97,6 +100,10 @@ class Battleship {
 
   getOpponentBoard() {
     return this.#opponentBoard;
+  }
+
+  setOpponentBoard(board: string[][]) {
+    this.#opponentBoard = board;
   }
 
   getPlayerBoard() {

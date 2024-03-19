@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useState } from "react";
 import { Board } from "./Board";
 import Battleship from "../models/Battleship";
 
@@ -11,12 +11,7 @@ interface Props {
 }
 
 function Game({ player, opponent }: Props) {
-  const battleship = useMemo(() => new Battleship(), []);
-  const [setupPhase, setSetupPhase] = useState(battleship.isSetupPhase());
-  const [opponentState, setOpponentState] = useState(battleship.getOpponentBoard());
-  const [playerState, setPlayerState] = useState(battleship.getPlayerBoard());
-  const [over, setOver] = useState("");
-  const [turn, setTurn] = useState(0);
+  const [battleship, setBattleship] = useState(new Battleship());
 
   // Setting up the board with battleships
   function onDrop() {}
@@ -36,13 +31,11 @@ function Game({ player, opponent }: Props) {
     (moveData: {target: string, turn: string}) => {
       try {
         const result = battleship.move(moveData);
-        setOpponentState(battleship.getOpponentBoard());
+        battleship.setOpponentBoard(result);
 
         console.log("Victory!", battleship.isGameOver());
 
-        if (battleship.isGameOver()) {
-          setOver("Victory!");
-        }
+        setBattleship({ ...battleship });
 
         return result;
       } catch (e) {
@@ -54,10 +47,10 @@ function Game({ player, opponent }: Props) {
 
   return (
     <>
-      <div style={{ height: 30 }}>{`${opponent}\'s Fleet"`}</div>
+      <div style={{ height: 30 }}>{`${opponent}\'s Fleet`}</div>
       <Board
         id="opponentBoard"
-        boardState={opponentState}
+        boardState={battleship.getOpponentBoard()}
         boardWidth={400}
         rows={5}
         cols={5}
@@ -66,7 +59,7 @@ function Game({ player, opponent }: Props) {
       <div style={{ height: 30 }}>{`${player}\'s Fleet`}</div>
       <Board
         id="playerBoard"
-        boardState={playerState}
+        boardState={battleship.getPlayerBoard()}
         boardWidth={400}
         rows={5}
         cols={5}

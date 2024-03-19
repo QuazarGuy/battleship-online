@@ -16,5 +16,5 @@ export function getRow(row: number): string {
 
 export function getCoords(cell: string): [number, number] {
     const [row, col] = cell.split("-");
-    return [row.charCodeAt(0) - "A".charCodeAt(0), parseInt(col)];
+    return [row.charCodeAt(0) - "A".charCodeAt(0), parseInt(col)-1];
 }

@@ -8,11 +8,12 @@ interface Props {
   boardWidth: number;
   rows: number;
   cols: number;
-  onMove: (cellid: string) => string[][];
+  onMove: (cellid: string) => boolean;
 }
 
 export function Board({
   id,
+  boardState,
   boardWidth,
   rows = 9,
   cols = 9,
@@ -37,8 +38,7 @@ export function Board({
                 <Cell
                   key={`${row}-${col}`}
                   cellid={`${row}-${col}`}
-                  state="empty"
-                  ship={row === "C" && col === "4" ? true : false}
+                  state={boardState[r][c]}
                   boardWidth={boardWidth}
                   colCount={cols}
                   onMove={() => onMove(`${row}-${col}`)}
