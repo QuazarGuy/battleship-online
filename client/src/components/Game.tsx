@@ -19,7 +19,7 @@ function Game({ player, opponent }: Props) {
   function onMove(cellid: string): boolean {
     const moveData = {
       target: cellid,
-      turn: battleship.getTurn(),
+      turn: battleship.turn,
     }
     
     const move = makeAMove(moveData);
@@ -31,11 +31,14 @@ function Game({ player, opponent }: Props) {
     (moveData: {target: string, turn: string}) => {
       try {
         const result = battleship.move(moveData);
-        battleship.setOpponentBoard(result);
+        battleship.opponentBoard.map((row, rowIndex) => {
+          return rowIndex === modifiedRowIndex ? [...row.slice(0, modifiedColIndex), newValue, ...row.slice(modifiedColIndex + 1)] : row;
+        });
 
         console.log("Victory!", battleship.isGameOver());
+        console.log(battleship);
 
-        setBattleship({ ...battleship });
+        setBattleship(prevState => ({ ...prevState, opponentBoard: result }));
 
         return result;
       } catch (e) {
@@ -50,7 +53,7 @@ function Game({ player, opponent }: Props) {
       <div style={{ height: 30 }}>{`${opponent}\'s Fleet`}</div>
       <Board
         id="opponentBoard"
-        boardState={battleship.getOpponentBoard()}
+        boardState={battleship.opponentBoard}
         boardWidth={400}
         rows={5}
         cols={5}
@@ -59,7 +62,7 @@ function Game({ player, opponent }: Props) {
       <div style={{ height: 30 }}>{`${player}\'s Fleet`}</div>
       <Board
         id="playerBoard"
-        boardState={battleship.getPlayerBoard()}
+        boardState={battleship.playerBoard}
         boardWidth={400}
         rows={5}
         cols={5}
