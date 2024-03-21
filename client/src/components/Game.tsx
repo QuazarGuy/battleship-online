@@ -1,6 +1,6 @@
 import { useCallback, useState } from "react";
 import { Board } from "./Board";
-import Battleship from "../models/Battleship";
+import { Battleship } from "../models/Battleship";
 
 // https://blog.openreplay.com/building-a-chess-game-with-react/
 
@@ -31,14 +31,12 @@ function Game({ player, opponent }: Props) {
     (moveData: {target: string, turn: string}) => {
       try {
         const result = battleship.move(moveData);
-        battleship.opponentBoard.map((row, rowIndex) => {
-          return rowIndex === modifiedRowIndex ? [...row.slice(0, modifiedColIndex), newValue, ...row.slice(modifiedColIndex + 1)] : row;
-        });
+        
 
         console.log("Victory!", battleship.isGameOver());
         console.log(battleship);
 
-        setBattleship(prevState => ({ ...prevState, opponentBoard: result }));
+        setBattleship((prevState: any) => ({ ...prevState, opponentBoard: result }));
 
         return result;
       } catch (e) {
