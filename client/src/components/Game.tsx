@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { Board } from "./Board";
 import { Battleship } from "../models/Battleship";
 
@@ -11,7 +11,10 @@ interface Props {
 }
 
 function Game({ player, opponent }: Props) {
-  const [battleship, setBattleship] = useState(new Battleship());
+  const battleship = useMemo(() => new Battleship(), []);
+  const [opponentBoard, setOpponentBoard] = useState(battleship.opponentBoard);
+  const [playerBoard, setPlayerBoard] = useState(battleship.playerBoard);
+  const [turn, setTurn] = useState("Axis");
 
   // Setting up the board with battleships
   function onDrop() {}

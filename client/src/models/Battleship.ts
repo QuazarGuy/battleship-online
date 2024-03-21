@@ -50,7 +50,12 @@ export class Battleship {
       console.log("not your turn");
       return this._opponentBoard;
     }
-    if (targetRow < 0 || targetRow >= this._rows || targetCol < 0 || targetCol >= this._cols) {
+    if (
+      targetRow < 0 ||
+      targetRow >= this._rows ||
+      targetCol < 0 ||
+      targetCol >= this._cols
+    ) {
       console.log("out of bounds");
       return this._opponentBoard;
     }
@@ -59,9 +64,9 @@ export class Battleship {
       return this._opponentBoard;
     }
     // TODO: Add server check for ship
-    this._opponentBoard = this._opponentBoard.map((row, rowIndex) => {
-      return rowIndex === targetRow ? [...row.slice(0, targetCol), "ship" ? "hit" : "miss", ...row.slice(targetCol + 1)] : row;
-    });
+    this._opponentBoard = JSON.parse(JSON.stringify(this._opponentBoard));
+    this._opponentBoard[targetRow][targetCol] =
+      this._opponentBoard[targetRow][targetCol] === "ship" ? "hit" : "miss";
 
     // this._opponentBoard[targetRow][targetCol] =
     //   this._opponentBoard[targetRow][targetCol] === "ship" ? "hit" : "miss";
