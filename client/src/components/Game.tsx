@@ -35,11 +35,9 @@ function Game({ player, opponent }: Props) {
       try {
         const result = battleship.move(moveData);
         
-
         console.log("Victory!", battleship.isGameOver());
-        console.log(battleship);
 
-        setBattleship((prevState: any) => ({ ...prevState, opponentBoard: result }));
+        setOpponentBoard(battleship.opponentBoard);
 
         return result;
       } catch (e) {
@@ -54,7 +52,7 @@ function Game({ player, opponent }: Props) {
       <div style={{ height: 30 }}>{`${opponent}\'s Fleet`}</div>
       <Board
         id="opponentBoard"
-        boardState={battleship.opponentBoard}
+        boardState={opponentBoard}
         boardWidth={400}
         rows={5}
         cols={5}
@@ -63,7 +61,7 @@ function Game({ player, opponent }: Props) {
       <div style={{ height: 30 }}>{`${player}\'s Fleet`}</div>
       <Board
         id="playerBoard"
-        boardState={battleship.playerBoard}
+        boardState={playerBoard}
         boardWidth={400}
         rows={5}
         cols={5}

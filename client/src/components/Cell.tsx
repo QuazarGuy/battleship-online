@@ -54,8 +54,6 @@ export function Cell({ cellid, state, boardWidth, colCount, children, onMove = (
   //   }
   // }
 
-  console.log("cell: ", cellid, " state: ", state);
-
   return (
     <div
       id={cellid}
