@@ -2,16 +2,21 @@
 
 import { useState, useEffect } from "react";
 import { socket } from "./socket";
-import { ConnectionState } from './components/ConnectionState';
-import { ConnectionManager } from './components/ConnectionManager';
+import { ConnectionState } from "./components/ConnectionState";
+import { ConnectionManager } from "./components/ConnectionManager";
 import Game from "./components/Game";
 import CustomDialog from "./components/CustomDialog";
 import { TextField } from "@mui/material";
+import Lobby from "./components/Lobby";
 
 function App() {
-  const [username, setUsername] = useState('');
+  const [username, setUsername] = useState("");
   const [usernameSubmitted, setUsernameSumbitted] = useState(false);
   const [isConnected, setIsConnected] = useState(socket.connected);
+
+  const [room, setRoom] = useState("");
+  const [orientation, setOrientation] = useState("");
+  const [players, setPlayers] = useState([]);
 
   useEffect(() => {
     function onConnect() {
@@ -36,10 +41,10 @@ function App() {
   return (
     <>
       <CustomDialog
-        open = {!usernameSubmitted}
-        title = "Pick a username"
-        contentText = "Please select a username"
-        handleContinue = {() => {
+        open={!usernameSubmitted}
+        title="Pick a username"
+        contentText="Please select a username"
+        handleContinue={() => {
           if (!username) return;
           console.log("username: ", username);
           socket.emit("username", username);
@@ -60,9 +65,17 @@ function App() {
           variant="standard"
         />
       </CustomDialog>
-      <ConnectionState isConnected={ isConnected } />
+      <ConnectionState isConnected={isConnected} />
       {/* <ConnectionManager /> */}
-      <Game player={username} opponent="Alice" />
+      {room ? (
+        <Game player={username} opponent="Alice" />
+      ) : (
+        <Lobby
+          setRoom={setRoom}
+          setOrientation={setOrientation}
+          setPlayers={setPlayers}
+        />
+      )}
     </>
   );
 }
