@@ -5,12 +5,14 @@ import { Battleship } from "../models/Battleship";
 // https://blog.openreplay.com/building-a-chess-game-with-react/
 
 interface Props {
-  player: string;
-  opponent: string;
-  // reset: () => void;
+  room: string;
+  orientation: string;
+  username: string;
+  players: string[];
+  cleanup: () => void;
 }
 
-function Game({ player, opponent }: Props) {
+function Game({ room, orientation, username, players, cleanup }: Props) {
   const battleship = useMemo(() => new Battleship(), []);
   const [opponentBoard, setOpponentBoard] = useState(battleship.opponentBoard);
   const [playerBoard, setPlayerBoard] = useState(battleship.playerBoard);
@@ -49,7 +51,7 @@ function Game({ player, opponent }: Props) {
 
   return (
     <>
-      <div style={{ height: 30 }}>{`${opponent}\'s Fleet`}</div>
+      <div style={{ height: 30 }}>{`${players[1].username}\'s Fleet`}</div>
       <Board
         id="opponentBoard"
         boardState={opponentBoard}

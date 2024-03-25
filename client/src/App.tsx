@@ -1,6 +1,6 @@
 // https://blog.openreplay.com/building-a-chess-game-with-react/
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { socket } from "./socket";
 import { ConnectionState } from "./components/ConnectionState";
 import { ConnectionManager } from "./components/ConnectionManager";
@@ -38,6 +38,23 @@ function App() {
     };
   }, []);
 
+  const cleanup = useCallback(() => {
+    setRoom("");
+    setOrientation("");
+    setPlayers([]);
+  }, []);
+
+  useEffect(() => {
+    // const username = prompt("Username");
+    // setUsername(username);
+    // socket.emit("username", username);
+
+    socket.on("opponentJoined", (roomData) => {
+      console.log("roomData", roomData);
+      setPlayers(roomData.players);
+    });
+  }, []);
+
   return (
     <>
       <CustomDialog
@@ -68,7 +85,13 @@ function App() {
       <ConnectionState isConnected={isConnected} />
       {/* <ConnectionManager /> */}
       {room ? (
-        <Game player={username} opponent="Alice" />
+        <Game
+          room={room}
+          orientation={orientation}
+          username={username}
+          players={players}
+          cleanup={cleanup}
+        />
       ) : (
         <Lobby
           setRoom={setRoom}
