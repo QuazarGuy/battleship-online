@@ -7,85 +7,117 @@
 // TODO: check sunk ship
 // TODO: check winner
 
-class Game {
-  players: Player[];
-  // let turn = 0;
-  rows = 5;
-  cols = 10;
+const BOARD_SIZE = 5;
 
-  constructor(player: Player, rows = 5, cols = 10) {
-    player.board = this.#generateBoard();
-    this.players = [player];
-    this.rows = rows;
-    this.cols = cols;
+class Game {
+  _setupPhase: boolean;
+  _players: Player[];
+  _turn: string;
+  _rows: number;
+  _cols: number;
+
+  constructor(players: Player[], rows = BOARD_SIZE, cols = BOARD_SIZE) {
+    this._setupPhase = false;
+    this._players = players;
+    this._turn = "Axis";
+    this._rows = rows;
+    this._cols = cols;
+    this._players[0].board = this.#generateBoard();
   }
 
   addPlayer(player: Player): boolean {
-    if (this.players.length >= 2) {
+    if (this._players.length >= 2) {
       return false;
     } else {
-      this.players.push(player);
+      this._players.push(player);
       return true;
     }
   }
 
-  #generateBoard(): Map<string, string> {
-    let board: Map<string, string> = new Map();
-    let key = "";
-    for (let row = 0; row < this.rows; row++) {
-      for (let col = 0; col < this.cols; col++) {
-        key = `${String.fromCharCode("A".charCodeAt(0) + row)}-${(
-          col + 1
-        ).toString()}`;
-        console.log(key);
-        board.set(key, "empty");
-      }
-    }
+  #generateBoard(): string[][] {
+    let board = new Array(this._rows).fill(new Array(this._cols).fill("empty"));
     // TODO Remove when done testing
-    board.set("C-4", "ship");
+    board[2][2] = "ship";
     return board;
   }
 
+  isValidMove(data: { target: string; turn: string }): boolean {
+    const [targetRow, targetCol] = this.getCoords(data.target);
+    if (
+      this._players.length < 2 ||
+      this._setupPhase ||
+      data.turn !== this._turn
+    ) {
+      console.log("not your turn");
+      return false;
+    }
+    if (
+      targetRow < 0 ||
+      targetRow >= this._rows ||
+      targetCol < 0 ||
+      targetCol >= this._cols
+    ) {
+      console.log("out of bounds");
+      return false;
+    }
+    let board = this.getBoard(data.turn);
+    if (board[targetRow][targetCol] !== "empty") {
+      console.log("cell already attacked");
+      return false;
+    }
+    return true;
+  }
+
   async move(
-    data: string,
+    data: { target: string; turn: string },
     responder: (operation: string, data: object) => void
   ) {
-    // For testing lag
-    // await new Promise((r) => setTimeout(r, 1000));
-    let board = this.players[0].board;
-    if (board.has(data)) {
-      switch (board.get(data)) {
-        case "empty":
-          board.set(data, "miss");
-          break;
-        case "ship":
-          board.set(data, "hit");
-          break;
-        default:
-          responder("move", {
-            error: "invalid move - cell already attacked",
-          });
-          return;
-      }
-
-      responder("move", {
-        status: board.get(data),
-        cellid: data,
-      });
-    } else {
+    if (!this.isValidMove(data)) {
       responder("move", {
         error: "invalid move",
       });
+      return;
     }
+    // For testing lag
+    // await new Promise((r) => setTimeout(r, 1000));
+    let board = this.getBoard(data.turn);
+    let [moveRow, moveCol] = this.getCoords(data.target);
+    switch (board[moveRow][moveCol]) {
+      case "empty":
+        board[moveRow][moveCol] = "miss";
+        break;
+      case "ship":
+        board[moveRow][moveCol] = "hit";
+        break;
+      default:
+        responder("move", {
+          error: "invalid move",
+        });
+        return;
+    }
+
+    this._turn = this._turn === "Axis" ? "Allies" : "Axis";
+
+    responder("move", {
+      status: board[moveRow][moveCol],
+      cellid: data.target,
+    });
+  }
+
+  getBoard(turn: string): string[][] {
+    return turn === "Axis" ? this._players[0].board : this._players[1].board;
+  }
+
+  getCoords(target: string): [number, number] {
+    const [row, col] = target.split("-");
+    return [row.charCodeAt(0) - "A".charCodeAt(0), parseInt(col) - 1];
   }
 }
 
 class Player {
-  name: string;
-  board: Map<string, string>;
-  constructor(name: string) {
-    this.name = name;
-    this.board = new Map();
+  board: string[][];
+  constructor() {
+    this.board = new Array(5).fill(new Array(5).fill("empty"));
   }
 }
 

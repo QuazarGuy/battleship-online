@@ -3,7 +3,13 @@ import { SetStateAction, useState } from "react";
 import CustomDialog from "./CustomDialog";
 import { socket } from "../socket";
 
-export default function Lobby({ setRoom, setOrientation, setPlayers }) {
+interface Props {
+  setRoom: any;
+  setOrientation: any;
+  setPlayers: any;
+}
+
+export default function Lobby({ setRoom, setOrientation, setPlayers }: Props) {
   const [roomDialogOpen, setRoomDialogOpen] = useState(false);
   const [roomInput, setRoomInput] = useState(""); // input state
   const [roomError, setRoomError] = useState("");

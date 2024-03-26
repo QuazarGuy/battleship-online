@@ -3,7 +3,7 @@
 
 import express from 'express';
 import { Server } from 'socket.io';
-// import { Game, Player } from './battleship';
+import { Game, Player } from './battleship';
 import { v4 as uuidV4 } from 'uuid';
 
 const app = express();
@@ -27,6 +27,8 @@ app.listen(port, () => {
 });
 
 io.on('connection', (socket) => {
+  socket.data.game;
+
   console.log('user ' + socket.id + ' connected');
 
   socket.on('username', (data) => {
@@ -40,8 +42,10 @@ io.on('connection', (socket) => {
 
     rooms.set(roomId, {
       roomId,
-      players: [{ id: socket.id, username: socket.data?.username }]
-    })
+      players: [{ id: socket.id, username: socket.data?.username, orientation: 'Axis' }]
+    });
+
+    socket.data.game = new Game([new Player()])
 
     callback(roomId);
   });
@@ -84,7 +88,7 @@ io.on('connection', (socket) => {
       ...room,
       players: [
         ...room.players,
-        { id: socket.id, username: socket.data?.username },
+        { id: socket.id, username: socket.data?.username, orientation: 'Allies' },
       ],
     };
 
@@ -96,10 +100,12 @@ io.on('connection', (socket) => {
     socket.to(args.roomId).emit('opponentJoined', roomUpdate);
   });
 
-  // socket.on('move', (data) => {
-  //   console.log('move:', data);
-  //   game.move(data, responder);
-  // });
+  socket.on('move', (data) => {
+    const response = socket.data.game.move(data);
+    // emit to all sockets in the room except the emitting socket.
+    // TODO: validate move
+    socket.to(data.room).emit('move', response);
+  });
 
   socket.on('disconnect', () => {
     console.log('user ' + socket.id + ' disconnected');
