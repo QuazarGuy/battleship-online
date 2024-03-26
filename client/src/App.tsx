@@ -2,8 +2,6 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { socket } from "./socket";
-import { ConnectionState } from "./components/ConnectionState";
-import { ConnectionManager } from "./components/ConnectionManager";
 import Game from "./components/Game";
 import CustomDialog from "./components/CustomDialog";
 import { TextField } from "@mui/material";
@@ -12,31 +10,10 @@ import Lobby from "./components/Lobby";
 function App() {
   const [username, setUsername] = useState("");
   const [usernameSubmitted, setUsernameSumbitted] = useState(false);
-  const [isConnected, setIsConnected] = useState(socket.connected);
 
   const [room, setRoom] = useState("");
   const [orientation, setOrientation] = useState("");
   const [players, setPlayers] = useState([]);
-
-  useEffect(() => {
-    function onConnect() {
-      console.log("connected");
-      setIsConnected(true);
-    }
-
-    function onDisconnect() {
-      console.log("disconnected");
-      setIsConnected(false);
-    }
-
-    socket.on("connect", onConnect);
-    socket.on("disconnect", onDisconnect);
-
-    return () => {
-      socket.off("connect", onConnect);
-      socket.off("disconnect", onDisconnect);
-    };
-  }, []);
 
   const cleanup = useCallback(() => {
     setRoom("");
@@ -82,8 +59,6 @@ function App() {
           variant="standard"
         />
       </CustomDialog>
-      <ConnectionState isConnected={isConnected} />
-      {/* <ConnectionManager /> */}
       {room ? (
         <Game
           room={room}

@@ -9,9 +9,9 @@ export class Battleship {
   private _opponentBoard: string[][];
   private _playerBoard: string[][];
 
-  constructor(rows = 5, cols = 5) {
+  constructor(rows = 5, cols = 5, orientation = "Axis") {
     this._setupPhase = false;
-    this._orientation = "Axis";
+    this._orientation = orientation;
     this._turn = "Axis";
     this._rows = rows;
     this._cols = cols;
@@ -43,9 +43,9 @@ export class Battleship {
     return false;
   }
 
-  move(moveData: { target: string; turn: string }): string[][] {
-    console.log("battleship", moveData);
-    const [targetRow, targetCol] = getCoords(moveData.target);
+  move(move: { target: string; turn: string }): string[][] {
+    console.log("battleship", move);
+    const [targetRow, targetCol] = getCoords(move.target);
     if (this._setupPhase || this._turn !== this._orientation) {
       console.log("not your turn");
       return this._opponentBoard;

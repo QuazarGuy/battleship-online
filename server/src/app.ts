@@ -40,8 +40,8 @@ io.on('connection', (socket) => {
 
     rooms.set(roomId, {
       roomId,
-      players: [{ id: socket.id, username: socket.data?.username }]
-    })
+      players: [{ id: socket.id, username: socket.data?.username, orientation: 'Axis' }]
+    });
 
     callback(roomId);
   });
@@ -84,7 +84,7 @@ io.on('connection', (socket) => {
       ...room,
       players: [
         ...room.players,
-        { id: socket.id, username: socket.data?.username },
+        { id: socket.id, username: socket.data?.username, orientation: 'Allies' },
       ],
     };
 
@@ -96,10 +96,11 @@ io.on('connection', (socket) => {
     socket.to(args.roomId).emit('opponentJoined', roomUpdate);
   });
 
-  // socket.on('move', (data) => {
-  //   console.log('move:', data);
-  //   game.move(data, responder);
-  // });
+  socket.on('move', (data) => {
+    // emit to all sockets in the room except the emitting socket.
+    // TODO: validate move
+    socket.to(data.room).emit('move', data.move);
+  });
 
   socket.on('disconnect', () => {
     console.log('user ' + socket.id + ' disconnected');
