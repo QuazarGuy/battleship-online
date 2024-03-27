@@ -82,31 +82,18 @@ class Game {
     return true;
   }
 
-  async move(
-    data: { playerId: string; target: string },
-    responder: (operation: string, data: object) => void
-  ) {
+  move(data: { playerId: string; target: string }): object {
     const player = this._players.get(data.playerId);
     if (!player) {
-      responder("move", {
-        error: "player not found",
-      });
-      return;
+      return { error: "player not found" };
     }
     if (!this.isValidMove(data.playerId, player, data.target)) {
-      responder("move", {
-        error: "invalid move",
-      });
-      return;
+      return { error: "invalid move" };
     }
-    // For testing lag
-    // await new Promise((r) => setTimeout(r, 1000));
+    
     let board = this.getOpponentBoard(data.playerId);
     if (!board) {
-      responder("move", {
-        error: "opponent board not found",
-      });
-      return;
+      return { error: "opponent board not found" };
     }
     let [moveRow, moveCol] = this.getCoords(data.target);
     switch (board[moveRow][moveCol]) {
@@ -117,18 +104,12 @@ class Game {
         board[moveRow][moveCol] = "hit";
         break;
       default:
-        responder("move", {
-          error: "invalid move",
-        });
-        return;
+        return { error: "invalid move" };
     }
 
     this._turn = this._turn === "Axis" ? "Allies" : "Axis";
 
-    responder("move", {
-      status: board[moveRow][moveCol],
-      cellid: data.target,
-    });
+    return { status: board[moveRow][moveCol], cellid: data.target };
   }
 
   getOpponentBoard(playerId: string): string[][] | undefined {

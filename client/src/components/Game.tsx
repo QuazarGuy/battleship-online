@@ -1,16 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useCallback, useEffect, useMemo, useState } from "react";
 import { Board } from "./Board";
 import { Battleship } from "../models/Battleship";
 import { socket } from "../socket";
-import { socket } from "../socket";
 
 // https://blog.openreplay.com/building-a-chess-game-with-react/
-
-type Player = {
-  username: string;
-  orientation: string;
-}
 
 type Player = {
   username: string;
@@ -21,7 +14,6 @@ interface Props {
   room: string;
   orientation: string;
   username: string;
-  players: Player[];
   players: Player[];
   cleanup: () => void;
 }
@@ -36,19 +28,13 @@ function Game({ room, orientation, username, players, cleanup }: Props) {
   function onDrop() {}
 
   function onMove(cellid: string) {
-
-    const moveData = {
-      target: cellid,
-      turn: battleship.turn,
-    }
-    
-    if (battleship.isValidMove(moveData)) {
-      socket.emit("move", {moveData, room});      
+    if (battleship.isValidMove(cellid)) {
+      socket.emit("move", {target: cellid, roomId: room});      
     }
   }
 
   const makeAMove = useCallback(
-    (move: {target: string, turn: string}) => {
+    (move: {status: string; cellid: string}) => {
       try {
         const result = battleship.move(move);
         
@@ -66,13 +52,10 @@ function Game({ room, orientation, username, players, cleanup }: Props) {
 
   useEffect(() => {
     socket.on("move", (move) => {
-      console.log("received move", move);
-      makeAMove(move);
-    });
-  }, [makeAMove]);
-
-  useEffect(() => {
-    socket.on("move", (move) => {
+      if (move.error) {
+        console.log("error", move.error);
+        return;
+      }
       console.log("received move", move);
       makeAMove(move);
     });
@@ -80,7 +63,8 @@ function Game({ room, orientation, username, players, cleanup }: Props) {
 
   return (
     <>
-      <div style={{ height: 30 }}>{`${!players[1] ? "Waiting for opponent" : orientation === "Axis" ? players[1].username : players[0].username}\'s Fleet`}</div>
+      <div style={{ height: 30 }}>Room: {room}</div>
+      <div style={{ height: 30 }}>Turn: {turn}</div>
       <div style={{ height: 30 }}>{`${!players[1] ? "Waiting for opponent" : orientation === "Axis" ? players[1].username : players[0].username}\'s Fleet`}</div>
       <Board
         id="opponentBoard"
@@ -90,7 +74,6 @@ function Game({ room, orientation, username, players, cleanup }: Props) {
         cols={5}
         onMove={onMove}
       />
-      <div style={{ height: 30 }}>{`${username}\'s Fleet`}</div>
       <div style={{ height: 30 }}>{`${username}\'s Fleet`}</div>
       <Board
         id="playerBoard"

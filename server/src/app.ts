@@ -90,7 +90,6 @@ io.on('connection', (socket) => {
     };
 
     room.game.addPlayer(socket.id, 'Allies');
-
     rooms.set(args.roomId, roomUpdate);
 
     callback(roomUpdate); // respond to the client with the room details.
@@ -100,9 +99,8 @@ io.on('connection', (socket) => {
   });
 
   socket.on('move', (data) => {
-    const response = socket.data.game.move(data);
+    const response = rooms.get(data.room).game.move(socket.id, data.target);
     // emit to all sockets in the room except the emitting socket.
-    // TODO: validate move
     socket.to(data.room).emit('move', response);
   });
 

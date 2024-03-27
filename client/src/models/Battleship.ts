@@ -7,22 +7,14 @@ export class Battleship {
   private _rows: number;
   private _cols: number;
   private _players: Player[];
-  private _opponentBoard: string[][];
-  private _playerBoard: string[][];
 
-  constructor(players: Player[], rows = 5, cols = 5, orientation = "Axis") {
+  constructor(players: Player[], orientation: string, rows = 5, cols = 5) {
     this._setupPhase = false;
     this._players = players;
     this._orientation = orientation;
     this._turn = "Axis";
     this._rows = rows;
     this._cols = cols;
-    this._opponentBoard = Array(rows)
-      .fill(null)
-      .map(() => Array(cols).fill("empty"));
-    this._playerBoard = Array(rows)
-      .fill(null)
-      .map(() => Array(cols).fill("empty"));
   }
 
   get turn(): string {
@@ -45,9 +37,9 @@ export class Battleship {
     return false;
   }
 
-  isValidMove(move: { target: string; turn: string }): boolean {
-    console.log("battleship", move);
-    const [targetRow, targetCol] = getCoords(move.target);
+  isValidMove(target: string): boolean {
+    console.log("battleship", target);
+    const [targetRow, targetCol] = getCoords(target);
     if (this._setupPhase || this._turn !== this._orientation) {
       console.log("not your turn");
       return false;
@@ -68,8 +60,9 @@ export class Battleship {
     return true;
   }
 
-  move(move: { target: string; turn: string }): string[][] | null {
-    // TODO: Add server check for ship
+  move(move: { status: string; cellid: string }): string[][] | null {
+    const [targetRow, targetCol] = getCoords(move.cellid);
+    let board = 
     this._opponentBoard = JSON.parse(JSON.stringify(this._opponentBoard));
     this._opponentBoard[targetRow][targetCol] =
       this._opponentBoard[targetRow][targetCol] === "ship" ? "hit" : "miss";
