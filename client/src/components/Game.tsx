@@ -1,16 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useCallback, useEffect, useMemo, useState } from "react";
 import { Board } from "./Board";
 import { Battleship } from "../models/Battleship";
 import { socket } from "../socket";
-import { socket } from "../socket";
 
 // https://blog.openreplay.com/building-a-chess-game-with-react/
-
-type Player = {
-  username: string;
-  orientation: string;
-}
 
 type Player = {
   username: string;
@@ -21,7 +14,6 @@ interface Props {
   room: string;
   orientation: string;
   username: string;
-  players: Player[];
   players: Player[];
   cleanup: () => void;
 }
