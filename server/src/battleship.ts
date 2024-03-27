@@ -11,25 +11,31 @@ const BOARD_SIZE = 5;
 
 class Game {
   _setupPhase: boolean;
-  _players: Player[];
+  _players: Map<string, Player>;
+  _playerList: string[];
   _turn: string;
   _rows: number;
   _cols: number;
 
-  constructor(players: Player[], rows = BOARD_SIZE, cols = BOARD_SIZE) {
+  constructor(playerId: string, rows = BOARD_SIZE, cols = BOARD_SIZE) {
     this._setupPhase = false;
-    this._players = players;
+    this._players = new Map();
+    this._playerList = [playerId];
     this._turn = "Axis";
     this._rows = rows;
     this._cols = cols;
-    this._players[0].board = this.#generateBoard();
+    this.addPlayer(playerId, "Axis");
   }
 
-  addPlayer(player: Player): boolean {
-    if (this._players.length >= 2) {
+  addPlayer(playerId: string, orientation: string): boolean {
+    if (this._players.size >= 2) {
       return false;
     } else {
-      this._players.push(player);
+      this._players.set(
+        playerId,
+        new Player(orientation, this.#generateBoard())
+      );
+      this._playerList.push(playerId);
       return true;
     }
   }
@@ -41,12 +47,16 @@ class Game {
     return board;
   }
 
-  isValidMove(data: { target: string; turn: string }): boolean {
-    const [targetRow, targetCol] = this.getCoords(data.target);
+  isValidMove(playerId: string, player: Player, target: string): boolean {
+    const [targetRow, targetCol] = this.getCoords(target);
+    if (!player) {
+      console.log("player not found");
+      return false;
+    }
     if (
-      this._players.length < 2 ||
+      this._players.size < 2 ||
       this._setupPhase ||
-      data.turn !== this._turn
+      player.orientation !== this._turn
     ) {
       console.log("not your turn");
       return false;
@@ -60,8 +70,12 @@ class Game {
       console.log("out of bounds");
       return false;
     }
-    let board = this.getBoard(data.turn);
-    if (board[targetRow][targetCol] !== "empty") {
+    const opponentBoard = this.getOpponentBoard(playerId);
+    if (!opponentBoard) {
+      console.log("opponent board not found");
+      return false;
+    }
+    if (opponentBoard[targetRow][targetCol] !== "empty") {
       console.log("cell already attacked");
       return false;
     }
@@ -69,10 +83,17 @@ class Game {
   }
 
   async move(
-    data: { target: string; turn: string },
+    data: { playerId: string; target: string },
     responder: (operation: string, data: object) => void
   ) {
-    if (!this.isValidMove(data)) {
+    const player = this._players.get(data.playerId);
+    if (!player) {
+      responder("move", {
+        error: "player not found",
+      });
+      return;
+    }
+    if (!this.isValidMove(data.playerId, player, data.target)) {
       responder("move", {
         error: "invalid move",
       });
@@ -80,7 +101,13 @@ class Game {
     }
     // For testing lag
     // await new Promise((r) => setTimeout(r, 1000));
-    let board = this.getBoard(data.turn);
+    let board = this.getOpponentBoard(data.playerId);
+    if (!board) {
+      responder("move", {
+        error: "opponent board not found",
+      });
+      return;
+    }
     let [moveRow, moveCol] = this.getCoords(data.target);
     switch (board[moveRow][moveCol]) {
       case "empty":
@@ -104,8 +131,10 @@ class Game {
     });
   }
 
-  getBoard(turn: string): string[][] {
-    return turn === "Axis" ? this._players[0].board : this._players[1].board;
+  getOpponentBoard(playerId: string): string[][] | undefined {
+    return this._playerList[0] === playerId
+      ? this._players.get(this._playerList[1])?.board
+      : this._players.get(this._playerList[0])?.board;
   }
 
   getCoords(target: string): [number, number] {
@@ -115,9 +144,12 @@ class Game {
 }
 
 class Player {
+  orientation: string;
   board: string[][];
-  constructor() {
-    this.board = new Array(5).fill(new Array(5).fill("empty"));
+
+  constructor(orientation: string, board: string[][]) {
+    this.orientation = orientation;
+    this.board = board;
   }
 }
 

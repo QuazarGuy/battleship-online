@@ -27,8 +27,6 @@ app.listen(port, () => {
 });
 
 io.on('connection', (socket) => {
-  socket.data.game;
-
   console.log('user ' + socket.id + ' connected');
 
   socket.on('username', (data) => {
@@ -42,10 +40,9 @@ io.on('connection', (socket) => {
 
     rooms.set(roomId, {
       roomId,
-      players: [{ id: socket.id, username: socket.data?.username, orientation: 'Axis' }]
+      players: [{ id: socket.id, username: socket.data?.username, orientation: 'Axis' }],
+      game: new Game(socket.id)
     });
-
-    socket.data.game = new Game([new Player()])
 
     callback(roomId);
   });
@@ -89,8 +86,10 @@ io.on('connection', (socket) => {
       players: [
         ...room.players,
         { id: socket.id, username: socket.data?.username, orientation: 'Allies' },
-      ],
+      ]
     };
+
+    room.game.addPlayer(socket.id, 'Allies');
 
     rooms.set(args.roomId, roomUpdate);
 
