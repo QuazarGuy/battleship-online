@@ -8,7 +8,7 @@ interface Props {
   boardWidth: number;
   rows: number;
   cols: number;
-  onMove: (cellid: string) => boolean;
+  onMove: (cellid: string) => void;
 }
 
 export function Board({

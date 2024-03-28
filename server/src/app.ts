@@ -3,7 +3,7 @@
 
 import express from 'express';
 import { Server } from 'socket.io';
-import { Game, Player } from './battleship';
+import { Game } from './battleship';
 import { v4 as uuidV4 } from 'uuid';
 
 const app = express();
@@ -100,8 +100,11 @@ io.on('connection', (socket) => {
 
   socket.on('move', (data) => {
     const response = rooms.get(data.room).game.move(socket.id, data.target);
-    // emit to all sockets in the room except the emitting socket.
-    socket.to(data.room).emit('move', response);
+    socket.emit('move', response);
+    if (!response.error) {
+      const opponentResponse = { status: response.status, turn: response.turn, playerBoard: response.opponentBoard, opponentBoard: response.playerBoard };
+      socket.to(data.room).emit('move', opponentResponse);
+    }
   });
 
   socket.on('disconnect', () => {

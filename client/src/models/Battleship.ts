@@ -6,15 +6,17 @@ export class Battleship {
   private _turn: string;
   private _rows: number;
   private _cols: number;
-  private _players: Player[];
+  private _opponentBoard: string[][];
+  private _playerBoard: string[][];
 
-  constructor(players: Player[], orientation: string, rows = 5, cols = 5) {
+  constructor(orientation: string, rows = 5, cols = 5) {
     this._setupPhase = false;
-    this._players = players;
     this._orientation = orientation;
     this._turn = "Axis";
     this._rows = rows;
     this._cols = cols;
+    this._playerBoard = new Array(this._rows).fill(new Array(this._cols).fill("empty"));
+    this._opponentBoard = new Array(this._rows).fill(new Array(this._cols).fill("empty"));
   }
 
   get turn(): string {
@@ -60,24 +62,22 @@ export class Battleship {
     return true;
   }
 
-  move(move: { status: string; cellid: string }): string[][] | null {
-    const [targetRow, targetCol] = getCoords(move.cellid);
-    let board = 
-    this._opponentBoard = JSON.parse(JSON.stringify(this._opponentBoard));
-    this._opponentBoard[targetRow][targetCol] =
-      this._opponentBoard[targetRow][targetCol] === "ship" ? "hit" : "miss";
-
-    console.log(this._opponentBoard[targetRow][targetCol]);
-    return this._opponentBoard;
+  move(move: {
+    status: string;
+    turn: string;
+    playerBoard: string[][];
+    opponentBoard: string[][];
+  }) {
+    this._playerBoard = move.playerBoard;
+    this._opponentBoard = move.opponentBoard;
+    this._turn = move.turn;
+    return;
   }
 
-  updateState(move: { players: Player[]; turn: string }): void {
-    
-  }
+  updateState(move: { players: Player[]; turn: string }): void {}
 }
 
 type Player = {
   username: string;
   board: string[][];
 };
-

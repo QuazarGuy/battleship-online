@@ -90,18 +90,18 @@ class Game {
     if (!this.isValidMove(data.playerId, player, data.target)) {
       return { error: "invalid move" };
     }
-    
-    let board = this.getOpponentBoard(data.playerId);
-    if (!board) {
+
+    let opponentBoard = this.getOpponentBoard(data.playerId);
+    if (!opponentBoard) {
       return { error: "opponent board not found" };
     }
     let [moveRow, moveCol] = this.getCoords(data.target);
-    switch (board[moveRow][moveCol]) {
+    switch (opponentBoard[moveRow][moveCol]) {
       case "empty":
-        board[moveRow][moveCol] = "miss";
+        opponentBoard[moveRow][moveCol] = "miss";
         break;
       case "ship":
-        board[moveRow][moveCol] = "hit";
+        opponentBoard[moveRow][moveCol] = "hit";
         break;
       default:
         return { error: "invalid move" };
@@ -109,13 +109,24 @@ class Game {
 
     this._turn = this._turn === "Axis" ? "Allies" : "Axis";
 
-    return { status: board[moveRow][moveCol], cellid: data.target };
+    return {
+      status: opponentBoard[moveRow][moveCol],
+      turn: this._turn,
+      playerBoard: this.getPlayerBoard(data.playerId),
+      opponentBoard: opponentBoard,
+    };
+  }
+
+  getPlayerBoard(playerId: string): string[][] | undefined {
+    return this._players.get(playerId)?.board;
   }
 
   getOpponentBoard(playerId: string): string[][] | undefined {
-    return this._playerList[0] === playerId
-      ? this._players.get(this._playerList[1])?.board
-      : this._players.get(this._playerList[0])?.board;
+    const opponentId =
+      this._playerList[0] === playerId
+        ? this._playerList[1]
+        : this._playerList[0];
+    return this._players.get(opponentId)?.board;
   }
 
   getCoords(target: string): [number, number] {

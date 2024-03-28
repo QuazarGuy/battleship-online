@@ -19,7 +19,7 @@ interface Props {
 }
 
 function Game({ room, orientation, username, players, cleanup }: Props) {
-  const battleship = useMemo(() => new Battleship(), []);
+  const battleship = useMemo(() => new Battleship(orientation), []);
   const [opponentBoard, setOpponentBoard] = useState(battleship.opponentBoard);
   const [playerBoard, setPlayerBoard] = useState(battleship.playerBoard);
   const [turn, setTurn] = useState("Axis");
@@ -34,15 +34,18 @@ function Game({ room, orientation, username, players, cleanup }: Props) {
   }
 
   const makeAMove = useCallback(
-    (move: {status: string; cellid: string}) => {
+    (move: {status: string; turn: string, playerBoard: string[][], opponentBoard: string[][]}) => {
       try {
-        const result = battleship.move(move);
+        // Set model state
+        battleship.move(move);
         
         console.log("Victory!", battleship.isGameOver());
 
-        setOpponentBoard(battleship.opponentBoard);
+        setOpponentBoard(move.opponentBoard);
+        setPlayerBoard(move.playerBoard);
+        setTurn(move.turn);
 
-        return result;
+        return move.status;
       } catch (e) {
         return null;
       }
