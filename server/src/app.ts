@@ -101,9 +101,12 @@ io.on('connection', (socket) => {
   socket.on('move', (data) => {
     const response = rooms.get(data.roomId).game.move({ playerId: socket.id, target: data.target});
     socket.emit('move', response);
+    console.log("player move: ", response);
     if (!response.error) {
       const opponentResponse = { status: response.status, turn: response.turn, playerBoard: response.opponentBoard, opponentBoard: response.playerBoard };
-      socket.to(data.room).emit('move', opponentResponse);
+      console.log("roomId: ", data.roomId);
+      socket.to(data.roomId).emit('move', opponentResponse);
+      console.log("opponent move: ", opponentResponse);
     }
   });
 

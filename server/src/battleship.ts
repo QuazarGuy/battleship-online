@@ -41,7 +41,14 @@ class Game {
   }
 
   #generateBoard(): string[][] {
-    let board = new Array(this._rows).fill(new Array(this._cols).fill("empty"));
+    let board = [];
+    for (let i = 0; i < this._rows; i++) {
+      let row = [];
+      for (let j = 0; j < this._cols; j++) {
+        row.push("empty");
+      }
+      board.push(row);
+    }
     // TODO Remove when done testing
     board[2][2] = "ship";
     return board;
