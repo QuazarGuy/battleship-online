@@ -1,7 +1,7 @@
 // DONE: maintain state to dedupe moves
 // TODO: reset button
-// TODO: turns
-// TODO: 2 players
+// DONE: turns
+// DONE: 2 players
 // TODO: introduce setup phase
 // TODO: validate ship placement
 // TODO: check sunk ship
@@ -17,14 +17,13 @@ class Game {
   _rows: number;
   _cols: number;
 
-  constructor(playerId: string, rows = BOARD_SIZE, cols = BOARD_SIZE) {
+  constructor(rows = BOARD_SIZE, cols = BOARD_SIZE) {
     this._setupPhase = false;
     this._players = new Map();
-    this._playerList = [playerId];
+    this._playerList = [];
     this._turn = "Axis";
     this._rows = rows;
     this._cols = cols;
-    this.addPlayer(playerId, "Axis");
   }
 
   addPlayer(playerId: string, orientation: string): boolean {
@@ -33,33 +32,15 @@ class Game {
     } else {
       this._players.set(
         playerId,
-        new Player(orientation, this.#generateBoard())
+        new Player(orientation, this._rows, this._cols)
       );
       this._playerList.push(playerId);
       return true;
     }
   }
 
-  #generateBoard(): string[][] {
-    let board = [];
-    for (let i = 0; i < this._rows; i++) {
-      let row = [];
-      for (let j = 0; j < this._cols; j++) {
-        row.push("empty");
-      }
-      board.push(row);
-    }
-    // TODO Remove when done testing
-    board[2][2] = "ship";
-    return board;
-  }
-
   isValidMove(playerId: string, player: Player, target: string): boolean {
     const [targetRow, targetCol] = this.getCoords(target);
-    if (!player) {
-      console.log("player not found");
-      return false;
-    }
     if (
       this._players.size < 2 ||
       this._setupPhase ||
@@ -77,7 +58,8 @@ class Game {
       console.log("out of bounds");
       return false;
     }
-    const opponentBoard = this.getOpponentBoard(playerId);
+    const opponentId = this.getOpponentId(playerId);
+    const opponentBoard = this.getPlayerBoard(opponentId);
     if (!opponentBoard) {
       console.log("opponent board not found");
       return false;
@@ -98,7 +80,10 @@ class Game {
       return { error: "invalid move" };
     }
 
-    let opponentBoard = this.getOpponentBoard(data.playerId);
+    this._turn = this._turn === "Axis" ? "Allies" : "Axis";
+
+    const opponentId = this.getOpponentId(data.playerId);
+    const opponentBoard = this.getPlayerBoard(opponentId);
     if (!opponentBoard) {
       return { error: "opponent board not found" };
     }
@@ -114,8 +99,6 @@ class Game {
         return { error: "invalid move" };
     }
 
-    this._turn = this._turn === "Axis" ? "Allies" : "Axis";
-
     return {
       status: opponentBoard[moveRow][moveCol],
       turn: this._turn,
@@ -128,12 +111,15 @@ class Game {
     return this._players.get(playerId)?.board;
   }
 
-  getOpponentBoard(playerId: string): string[][] | undefined {
+  getOpponentId(playerId: string): string {
+    if (this._playerList.length < 2) {
+      throw new Error("no opponent found"); 
+    }
     const opponentId =
       this._playerList[0] === playerId
         ? this._playerList[1]
         : this._playerList[0];
-    return this._players.get(opponentId)?.board;
+    return opponentId;
   }
 
   getCoords(target: string): [number, number] {
@@ -143,13 +129,89 @@ class Game {
 }
 
 class Player {
-  orientation: string;
-  board: string[][];
+  private _orientation: string;
+  private _board: string[][];
+  private _shipPlacement: string[][];
+  private _ships: Map<string, Ship>;
 
-  constructor(orientation: string, board: string[][]) {
-    this.orientation = orientation;
-    this.board = board;
+  constructor(orientation: string, rows: number, cols: number) {
+    this._orientation = orientation;
+    this._board = this.generateBoard(rows, cols);
+    this._shipPlacement = this.generateBoard(rows, cols);
+    this._ships = new Map();
+
+    // TODO Remove when done testing
+    this._shipPlacement[2][2] = "ship";
+    this._ships.set("ship", new Ship(1));
+  }
+
+  generateBoard(rows: number, cols: number): string[][] {
+    let board = [];
+    for (let i = 0; i < rows; i++) {
+      let row = [];
+      for (let j = 0; j < cols; j++) {
+        row.push("empty");
+      }
+      board.push(row);
+    }
+    return board;
+  }
+
+  get orientation(): string {
+    return this._orientation;
+  }
+
+  get board(): string[][] {
+    return this._board;
+  }
+
+  isAttacked(row: number, col: number): boolean {
+    return this._board[row][col] !== "empty";
+  }
+
+  // Throws an error if the coordinates are already attacked
+  setAttacked(row: number, col: number) {
+    if (!this.isAttacked(row, col)) {
+      throw new Error("already attacked");
+    }
+    this._board[row][col] = this.isShip(row, col) ? "hit" : "miss";
+    this._ships.get(this._shipPlacement[row][col])?.addHit();
+  }
+
+  // TODO: Validate placement of ships
+  set shipPlacement(shipPlacement: string[][]) {
+    this._shipPlacement = shipPlacement;
+  }
+
+  isShip(row: number, col: number): boolean {
+    return this._shipPlacement[row][col] !== "empty";
+  }
+
+  // Throws an error if there isn't a ship at the specified coordinates
+  isSunk(row: number, col: number): boolean {
+    if (!this.isShip(row, col)) {
+      throw new Error("not a ship");
+    }
+    return this._ships.get(this._shipPlacement[row][col])?.isSunk() ?? false;
   }
 }
 
-export { Game, Player };
+class Ship {
+  private _size: number;
+  private _hits: number;
+
+  constructor(size: number) {
+    this._size = size;
+    this._hits = 0;
+  }
+
+  addHit() {
+    this._hits++;
+  }
+
+  isSunk(): boolean {
+    return this._hits >= this._size;
+  }
+}
+
+export { Game };

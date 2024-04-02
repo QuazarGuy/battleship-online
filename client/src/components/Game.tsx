@@ -29,6 +29,7 @@ function Game({ room, orientation, username, players, cleanup }: Props) {
 
   function onMove(cellid: string) {
     if (battleship.isValidMove(cellid)) {
+      console.log("sending move", cellid);
       socket.emit("move", {target: cellid, roomId: room});      
     }
   }
@@ -54,12 +55,12 @@ function Game({ room, orientation, username, players, cleanup }: Props) {
   )
 
   useEffect(() => {
-    socket.on("move", (move) => {
+    socket.on("move", (move, count) => {
       if (move.error) {
         console.log("error", move.error);
         return;
       }
-      console.log("received move", move);
+      console.log("received move", count, move);
       makeAMove(move);
     });
   }, [makeAMove]);
@@ -84,7 +85,7 @@ function Game({ room, orientation, username, players, cleanup }: Props) {
         boardWidth={400}
         rows={5}
         cols={5}
-        onMove={onMove}
+        onMove={() => {}}
       />
     </>
   );
