@@ -10,7 +10,7 @@ export class Battleship {
   private _playerBoard: string[][];
 
   constructor(orientation: string, rows = 5, cols = 5) {
-    this._setupPhase = false;
+    this._setupPhase = true;
     this._orientation = orientation;
     this._turn = "Axis";
     this._rows = rows;
@@ -37,6 +37,20 @@ export class Battleship {
   // TODO: Check if all enemy ships are sunk
   isGameOver(): boolean {
     return false;
+  }
+
+  addShip(cellid: string): void {
+    if (this._setupPhase) {
+      const [row, col] = getCoords(cellid);
+      this._playerBoard[row][col] = "ship";
+      this._playerBoard = JSON.parse(JSON.stringify(this._playerBoard));
+    } else {
+      console.log("already setup");
+    }
+  }
+
+  ready() {
+    this._setupPhase = false;
   }
 
   isValidMove(target: string): boolean {

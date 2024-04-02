@@ -1,4 +1,5 @@
-// TODO add room and table support
+// DONE add room and table support
+// TODO add room cleanup
 // TODO add account support
 
 import express from 'express';
@@ -41,8 +42,10 @@ io.on('connection', (socket) => {
     rooms.set(roomId, {
       roomId,
       players: [{ id: socket.id, username: socket.data?.username, orientation: 'Axis' }],
-      game: new Game(socket.id)
+      game: new Game()
     });
+
+    rooms.get(roomId).game.addPlayer(socket.id, 'Axis');
 
     callback(roomId);
   });
@@ -101,12 +104,17 @@ io.on('connection', (socket) => {
   socket.on('move', (data) => {
     const response = rooms.get(data.roomId).game.move({ playerId: socket.id, target: data.target});
     socket.emit('move', response);
-    console.log("player move: ", response);
     if (!response.error) {
       const opponentResponse = { status: response.status, turn: response.turn, playerBoard: response.opponentBoard, opponentBoard: response.playerBoard };
-      console.log("roomId: ", data.roomId);
       socket.to(data.roomId).emit('move', opponentResponse);
-      console.log("opponent move: ", opponentResponse);
+    }
+  });
+
+  socket.on('setup', (data) => {
+    const response = rooms.get(data.roomId).game.setup(socket.id, data.playerBoard);
+    socket.emit('setup', response);
+    if (!response.error) {
+      socket.to(data.roomId).emit('setup', response);
     }
   });
 
