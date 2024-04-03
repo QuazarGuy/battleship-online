@@ -1,4 +1,4 @@
-import { getRow, getColumn, getCoords } from "../utils/consts";
+import { getCoords } from "../utils/consts";
 
 export class Battleship {
   private _setupPhase: boolean;
@@ -15,8 +15,20 @@ export class Battleship {
     this._turn = "Axis";
     this._rows = rows;
     this._cols = cols;
-    this._playerBoard = new Array(this._rows).fill(new Array(this._cols).fill("empty"));
-    this._opponentBoard = new Array(this._rows).fill(new Array(this._cols).fill("empty"));
+    this._playerBoard = this.generateBoard(this._rows, this._cols);
+    this._opponentBoard = this.generateBoard(this._rows, this._cols);
+  }
+
+  private generateBoard(rows: number, cols: number): string[][] {
+    let board = [];
+    for (let i = 0; i < rows; i++) {
+      let row = [];
+      for (let j = 0; j < cols; j++) {
+        row.push("empty");
+      }
+      board.push(row);
+    }
+    return board;
   }
 
   get turn(): string {
@@ -28,6 +40,17 @@ export class Battleship {
   }
 
   get playerBoard(): string[][] {
+    return this._playerBoard;
+  }
+
+  updatePlayerBoard(update: string[][]): string[][] {
+    this._playerBoard = JSON.parse(JSON.stringify(this._playerBoard))
+    for (let i = 0; i < this._rows; i++) {
+      for (let j = 0; j < this._cols; j++) {
+        this._playerBoard[i][j] = update[i][j] === "hit" || update[i][j] === "miss" ? update[i][j] : this._playerBoard[i][j];
+      }
+    }
+    
     return this._playerBoard;
   }
 
@@ -87,8 +110,6 @@ export class Battleship {
     this._turn = move.turn;
     return;
   }
-
-  updateState(move: { players: Player[]; turn: string }): void {}
 }
 
 type Player = {

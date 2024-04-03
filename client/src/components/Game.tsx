@@ -56,7 +56,7 @@ function Game({ room, orientation, username, players, cleanup }: Props) {
         console.log("Victory!", battleship.isGameOver());
 
         setOpponentBoard(move.opponentBoard);
-        setPlayerBoard(move.playerBoard);
+        setPlayerBoard(battleship.updatePlayerBoard(move.playerBoard));
         setTurn(move.turn);
 
         return move.status;
