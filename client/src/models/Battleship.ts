@@ -8,6 +8,8 @@ export class Battleship {
   private _cols: number;
   private _opponentBoard: string[][];
   private _playerBoard: string[][];
+  private _playerShips: Map<string, number>;
+  private _gameOver: boolean;
 
   constructor(orientation: string, rows = 5, cols = 5) {
     this._setupPhase = true;
@@ -17,6 +19,8 @@ export class Battleship {
     this._cols = cols;
     this._playerBoard = this.generateBoard(this._rows, this._cols);
     this._opponentBoard = this.generateBoard(this._rows, this._cols);
+    this._playerShips = new Map();
+    this._gameOver = false;
   }
 
   private generateBoard(rows: number, cols: number): string[][] {
@@ -43,6 +47,14 @@ export class Battleship {
     return this._playerBoard;
   }
 
+  get playerShips(): string[][] {
+    var ships = [];
+    for (const [key, value] of this._playerShips) {
+      ships.push([key, value.toString()]);
+    }
+    return ships;
+  }
+
   updatePlayerBoard(update: string[][]): string[][] {
     this._playerBoard = JSON.parse(JSON.stringify(this._playerBoard))
     for (let i = 0; i < this._rows; i++) {
@@ -59,7 +71,7 @@ export class Battleship {
 
   // TODO: Check if all enemy ships are sunk
   isGameOver(): boolean {
-    return false;
+    return this._gameOver;
   }
 
   addShip(cellid: string): void {
@@ -67,6 +79,8 @@ export class Battleship {
       const [row, col] = getCoords(cellid);
       this._playerBoard[row][col] = "ship";
       this._playerBoard = JSON.parse(JSON.stringify(this._playerBoard));
+      this._playerShips.set("ship", (this._playerShips.get("ship") ?? 0) + 1);
+      console.log("playerShips: ", this._playerShips);
     } else {
       console.log("already setup");
     }
@@ -101,18 +115,16 @@ export class Battleship {
 
   move(move: {
     status: string;
+    shipStatus: string | undefined;
+    gameOver: boolean;
     turn: string;
     playerBoard: string[][];
     opponentBoard: string[][];
   }) {
-    this._playerBoard = move.playerBoard;
+    this._gameOver = move.gameOver;
+    this._playerBoard = this.updatePlayerBoard(move.playerBoard);
     this._opponentBoard = move.opponentBoard;
-    this._turn = move.turn;
+    this._turn = this._gameOver ? 'Game Over' : move.turn;
     return;
   }
 }
-
-type Player = {
-  username: string;
-  board: string[][];
-};

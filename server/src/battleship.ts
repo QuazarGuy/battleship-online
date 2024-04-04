@@ -39,24 +39,31 @@ class Game {
     }
   }
 
-  setup(playerId: string, board: string[][]): object {
+  setup(playerId: string, board: string[][], ships: string[][]): object {
     const player = this._players.get(playerId)
     if (!player) {
       return {
         error: "player not found"
       }
     }
-    player.board = board;
+    player.shipPlacement = board;
+    player.ships = ships;
     player.ready = true;
-    const opponent = this._players.get(this.getOpponentId(playerId));
-    if (opponent && opponent.ready) {
-      this._setupPhase = false;
+    try {
+      const opponent = this._players.get(this.getOpponentId(playerId));
+      if (opponent && opponent.ready) {
+        this._setupPhase = false;
+        return {
+          msg: "setup complete",
+        };
+      }
       return {
-        msg: "setup complete",
-      };
-    }
-    return {
-      error: "waiting for opponent",
+        error: "waiting for opponent",
+      }
+    } catch (error) {
+      return {
+        error: "no opponent found",
+      }
     }
   }
 
@@ -112,6 +119,8 @@ class Game {
 
     return {
       status: opponent?.getStatus(moveRow, moveCol),
+      shipStatus: opponent?.getStatus(moveRow, moveCol) === "hit" ? opponent?.isSunk(moveRow, moveCol) : undefined,
+      gameOver: opponent?.isGameOver(),
       turn: this._turn,
       playerBoard: player?.board,
       opponentBoard: opponent?.board,
@@ -151,7 +160,7 @@ class Player {
     this._orientation = orientation;
     this._board = this.generateBoard(rows, cols);
     this._shipPlacement = this.generateBoard(rows, cols);
-    this._ships = new Map();
+    this._ships = new Map<string, Ship>();
     this._ready = false;
   }
 
@@ -175,17 +184,28 @@ class Player {
     return this._board;
   }
 
+  get shipPlacement(): string[][] {
+    return this._shipPlacement;
+  }
+
+  set shipPlacement(board: string[][]) {
+    this._shipPlacement = board;
+    // TODO: Validate placement of ships
+  }
+
+  set ships(ships: string[][]) {
+    this._ships = new Map<string, Ship>();
+    for (const ship of ships) {
+      this._ships.set(ship[0], new Ship(parseInt(ship[1])));
+    }
+  }
+
   get ready(): boolean {
     return this._ready;
   }
 
   set ready(ready: boolean) {
     this._ready = ready;
-  }
-
-  set board(board: string[][]) {
-    this._shipPlacement = board;
-    // TODO: Validate placement of ships
   }
 
   isAttacked(row: number, col: number): boolean {
@@ -205,11 +225,6 @@ class Player {
     this._ships.get(this._shipPlacement[row][col])?.addHit();
   }
 
-  // TODO: Validate placement of ships
-  set shipPlacement(shipPlacement: string[][]) {
-    this._shipPlacement = shipPlacement;
-  }
-
   isShip(row: number, col: number): boolean {
     return this._shipPlacement[row][col] !== "empty";
   }
@@ -220,6 +235,15 @@ class Player {
       throw new Error("not a ship");
     }
     return this._ships.get(this._shipPlacement[row][col])?.isSunk() ?? false;
+  }
+
+  isGameOver(): boolean {
+    for (const ship of this._ships.values()) {
+      if (!ship.isSunk()) {
+        return false;
+      }
+    }
+    return true;
   }
 }
 
@@ -233,10 +257,12 @@ class Ship {
   }
 
   addHit() {
+    console.log("hit", this._hits);
     this._hits++;
   }
 
   isSunk(): boolean {
+    console.log("sunk", this._hits, this._size);
     return this._hits >= this._size;
   }
 }

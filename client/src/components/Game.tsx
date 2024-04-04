@@ -24,6 +24,7 @@ function Game({ room, orientation, username, players, cleanup }: Props) {
   const [playerBoard, setPlayerBoard] = useState(battleship.playerBoard);
   const [setup, setSetup] = useState(true);
   const [turn, setTurn] = useState("Axis");
+  const [gameOver, setGameOver] = useState(false);
 
   // Setting up the board with battleships
   function onDrop(cellid: string) {
@@ -32,7 +33,7 @@ function Game({ room, orientation, username, players, cleanup }: Props) {
   }
 
   function onReady() {
-    socket.emit("setup", { roomId: room, playerBoard: playerBoard });
+    socket.emit("setup", { roomId: room, playerBoard: playerBoard, ships: battleship.playerShips });
   }
 
   function onMove(cellid: string) {
@@ -45,6 +46,8 @@ function Game({ room, orientation, username, players, cleanup }: Props) {
   const makeAMove = useCallback(
     (move: {
       status: string;
+      shipStatus: string | undefined;
+      gameOver: boolean;
       turn: string;
       playerBoard: string[][];
       opponentBoard: string[][];
@@ -55,9 +58,10 @@ function Game({ room, orientation, username, players, cleanup }: Props) {
 
         console.log("Victory!", battleship.isGameOver());
 
-        setOpponentBoard(move.opponentBoard);
-        setPlayerBoard(battleship.updatePlayerBoard(move.playerBoard));
-        setTurn(move.turn);
+        setOpponentBoard(battleship.opponentBoard);
+        setPlayerBoard(battleship.playerBoard);
+        setGameOver(battleship.isGameOver());
+        setTurn(battleship.turn);
 
         return move.status;
       } catch (e) {
@@ -79,7 +83,6 @@ function Game({ room, orientation, username, players, cleanup }: Props) {
 
   useEffect(() => {
     socket.on("setup", (response) => {
-      console.log("setup", response);
       if (response.error) {
         console.log("error", response.error);
       } else {
@@ -107,7 +110,7 @@ function Game({ room, orientation, username, players, cleanup }: Props) {
         boardWidth={400}
         rows={5}
         cols={5}
-        onMove={setup ? () => {} : onMove}
+        onMove={setup || gameOver ? () => {} : onMove}
       />
       <div style={{ height: 30 }}>{`${username}\'s Fleet`}</div>
       <Board
