@@ -143,6 +143,22 @@ io.on("connection", (socket) => {
 
   socket.on("disconnect", () => {
     console.log("user " + socket.id + " disconnected");
+    const gameRooms = Array.from(rooms.values()); // <- 1
+
+    // TODO: fix inefficient room management
+    gameRooms.forEach((room) => { // <- 2
+      const userInRoom = room.players.find((player: any) => player.id === socket.id); // <- 3
+
+      if (userInRoom) {
+        if (room.players.length < 2) {
+          // if there's only 1 player in the room, close it and exit.
+          rooms.delete(room.roomId);
+          return;
+        }
+
+        socket.to(room.roomId).emit("playerDisconnected", userInRoom); // <- 4
+      }
+    });
   });
 
   // function responder(operation: string, data: object) {
