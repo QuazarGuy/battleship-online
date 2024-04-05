@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import CustomDialog from "./CustomDialog";
 import { Board } from "./Board";
 import { Battleship } from "../models/Battleship";
 import { socket } from "../socket";
@@ -38,7 +39,6 @@ function Game({ room, orientation, username, players, cleanup }: Props) {
 
   function onMove(cellid: string) {
     if (battleship.isValidMove(cellid)) {
-      console.log("sending move", cellid);
       socket.emit("move", { target: cellid, roomId: room });
     }
   }
@@ -55,8 +55,6 @@ function Game({ room, orientation, username, players, cleanup }: Props) {
       try {
         // Set model state
         battleship.move(move);
-
-        console.log("Victory!", battleship.isGameOver());
 
         setOpponentBoard(battleship.opponentBoard);
         setPlayerBoard(battleship.playerBoard);
@@ -122,6 +120,17 @@ function Game({ room, orientation, username, players, cleanup }: Props) {
         onMove={setup ? onDrop : () => {}}
       />
       {setup && <button onClick={onReady}>Ready</button>}
+      <CustomDialog // Game Over CustomDialog
+        open={Boolean(gameOver)}
+        title={"Game Over"}
+        contentText={battleship.turn === orientation ? "You Win!" : "You Lose!"}
+        handleContinue={() => {
+          socket.emit("closeRoom", { roomId: room });
+          cleanup();
+        }}
+      >
+        <div>Click Continue to go back to lobby</div>
+      </CustomDialog>
     </>
   );
 }

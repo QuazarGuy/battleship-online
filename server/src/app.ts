@@ -52,6 +52,20 @@ io.on("connection", (socket) => {
     callback(roomId);
   });
 
+  socket.on("getRooms", () => {
+    let roomList = [];
+    for (const room of rooms.values()) {
+      console.log(room.players);
+      if (room.players.length === 1) {
+        roomList.push([
+          room.roomId,
+          room.players[0].username,
+        ]);
+      }
+    }
+    socket.emit("roomList", roomList);
+  })
+
   socket.on("joinRoom", async (args, callback) => {
     // check if room exists and has a player waiting
     const room = rooms.get(args.roomId);
@@ -141,12 +155,25 @@ io.on("connection", (socket) => {
     }
   });
 
+  socket.on("closeRoom", async (data) => {
+    socket.to(data.roomId).emit("closeRoom", data);
+
+    const clientSockets = await io.in(data.roomId).fetchSockets();
+
+    clientSockets.forEach((s) => {
+      s.leave(data.roomId);
+    });
+
+    rooms.delete(data.roomId);
+  });
+
   socket.on("disconnect", () => {
     console.log("user " + socket.id + " disconnected");
     const gameRooms = Array.from(rooms.values()); // <- 1
 
     // TODO: fix inefficient room management
     gameRooms.forEach((room) => { // <- 2
+      console.log("room:", room.players);
       const userInRoom = room.players.find((player: any) => player.id === socket.id); // <- 3
 
       if (userInRoom) {
@@ -160,8 +187,4 @@ io.on("connection", (socket) => {
       }
     });
   });
-
-  // function responder(operation: string, data: object) {
-  //   socket.emit(operation, data);
-  // }
 });

@@ -13,7 +13,7 @@ interface Props {
     handleContinue: () => void;
 }
 
-export default function CustomDialog({ open, children, title, contentText, handleContinue }: Props) {
+export default function CustomDialog({ open, children = "</>", title, contentText, handleContinue }: Props) {
   return (
     <Dialog open={open}> {/*dialog container*/}
       <DialogTitle>{title}</DialogTitle>

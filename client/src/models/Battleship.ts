@@ -124,7 +124,6 @@ export class Battleship {
     this._gameOver = move.gameOver;
     this._playerBoard = this.updatePlayerBoard(move.playerBoard);
     this._opponentBoard = move.opponentBoard;
-    this._turn = this._gameOver ? 'Game Over' : move.turn;
-    return;
+    this._turn = move.turn;
   }
 }

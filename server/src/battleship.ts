@@ -74,7 +74,6 @@ class Game {
       this._setupPhase ||
       player.orientation !== this._turn
     ) {
-      console.log("not your turn");
       return false;
     }
     if (
@@ -83,16 +82,13 @@ class Game {
       targetCol < 0 ||
       targetCol >= this._cols
     ) {
-      console.log("out of bounds");
       return false;
     }
     const opponent = this._players.get(this.getOpponentId(playerId));
     if (!opponent) {
-      console.log("opponent not found");
       return false;
     }
     if (opponent.isAttacked(targetRow, targetCol)) {
-      console.log("cell already attacked");
       return false;
     }
     return true;
@@ -115,7 +111,9 @@ class Game {
     if (opponent && !opponent?.isAttacked(moveRow, moveCol)) {
       opponent.setAttacked(moveRow, moveCol);
     }
-    this._turn = this._turn === "Axis" ? "Allies" : "Axis";
+    if (!opponent?.isGameOver()) {
+      this._turn = this._turn === "Axis" ? "Allies" : "Axis";
+    }
 
     return {
       status: opponent?.getStatus(moveRow, moveCol),
@@ -257,12 +255,10 @@ class Ship {
   }
 
   addHit() {
-    console.log("hit", this._hits);
     this._hits++;
   }
 
   isSunk(): boolean {
-    console.log("sunk", this._hits, this._size);
     return this._hits >= this._size;
   }
 }
