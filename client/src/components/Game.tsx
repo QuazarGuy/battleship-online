@@ -37,6 +37,11 @@ function Game({ room, orientation, username, players, cleanup }: Props) {
     socket.emit("setup", { roomId: room, playerBoard: playerBoard, ships: battleship.playerShips });
   }
 
+  const ready = useCallback (() => {
+    battleship.ready();
+    console.log("ready"); 
+  }, [battleship]);
+
   function onMove(cellid: string) {
     if (battleship.isValidMove(cellid)) {
       socket.emit("move", { target: cellid, roomId: room });
@@ -85,11 +90,19 @@ function Game({ room, orientation, username, players, cleanup }: Props) {
         console.log("error", response.error);
       } else {
         console.log("setup", response.msg);
-        battleship.ready();
+        ready();
         setSetup(false);        
       }
     });
-  });
+  }, [ready]);
+
+  useEffect(() => {
+    socket.on('closeRoom', ({ roomId }) => {
+      if (roomId === room) {
+        cleanup();
+      }
+    });
+  }, [room, cleanup]);
 
   return (
     <>
