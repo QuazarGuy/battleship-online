@@ -8,15 +8,16 @@ interface Props {
   boardWidth: number;
   rows: number;
   cols: number;
-  onMove?: () => void;
+  onMove: (cellid: string) => void;
 }
 
 export function Board({
   id,
+  boardState,
   boardWidth,
   rows = 9,
   cols = 9,
-  onMove = () => {},
+  onMove,
 }: Props) {
   const showBoardNotation = true;
   return (
@@ -37,11 +38,10 @@ export function Board({
                 <Cell
                   key={`${row}-${col}`}
                   cellid={`${row}-${col}`}
-                  state="empty"
-                  ship={row === "C" && col === "4" ? true : false}
+                  state={boardState[r][c]}
                   boardWidth={boardWidth}
                   colCount={cols}
-                  onMove={onMove}
+                  onMove={() => onMove(`${row}-${col}`)}
                 >
                   {showBoardNotation && (
                     <Notation row={row} col={col} boardWidth={boardWidth} />

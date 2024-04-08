@@ -1,78 +1,152 @@
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import CustomDialog from "./CustomDialog";
+import { BOARD_SIZE } from "../utils/consts";
 import { Board } from "./Board";
-import Battleship from "../models/Battleship";
+import { Battleship } from "../models/Battleship";
+import { socket } from "../socket";
 
 // https://blog.openreplay.com/building-a-chess-game-with-react/
 
+type Player = {
+  username: string;
+  orientation: string;
+};
+
 interface Props {
-  player: string;
-  opponent: string;
   room: string;
   orientation: string;
-  // reset: () => void;
+  username: string;
+  players: Player[];
+  cleanup: () => void;
 }
 
-function Game({ player, opponent, room, orientation }: Props) {
-  const battleship = useMemo(() => new Battleship(), []);
-  const [opponentState, setOpponentState] = useState(battleship.opponentBoard);
-  const [playerState, setPlayerState] = useState(battleship.playerBoard);
-  //   const [over, setOver] = useState("");
-  const [turn, setTurn] = useState(0);
+function Game({ room, orientation, username, players, cleanup }: Props) {
+  const battleship = useMemo(() => new Battleship(orientation), []);
+  const [opponentBoard, setOpponentBoard] = useState(battleship.opponentBoard);
+  const [playerBoard, setPlayerBoard] = useState(battleship.playerBoard);
+  const [setup, setSetup] = useState(true);
+  const [turn, setTurn] = useState("Axis");
+  const [gameOver, setGameOver] = useState(false);
 
   // Setting up the board with battleships
-  function onDrop() {}
+  function onDrop(cellid: string) {
+    battleship.addShip(cellid);
+    setPlayerBoard(battleship.playerBoard);
+  }
 
-  function onMove(cell) {
-    if (state !== "empty") {
-      console.log("cell already clicked");
-    } else {
-      let status = "";
-      try {
-        socket.emit("move", cellid);
-        status = await new Promise((resolve, reject) => {
-          // Socket names are global, temporarily create a socket for this
-          // cell. Moves can't be spammed for normal users if we check cellid.
-          socket.once("move", (data) => {
-            if (data.error) {
-              reject(new Error(data.error));
-            } else if (data.cellid !== cellid) {
-              reject(
-                new Error(
-                  "data.cellid " + data.cellid + " !== cellid " + cellid
-                )
-              );
-            }
-            resolve(data.status);
-          });
-        });
-      } catch (error) {
-        console.log(error);
-        return;
-      }
-      setState(status);      
+  function onReady() {
+    socket.emit("setup", { roomId: room, playerBoard: playerBoard, ships: battleship.playerShips });
+  }
+
+  const ready = useCallback (() => {
+    battleship.ready();
+    console.log("ready"); 
+  }, [battleship]);
+
+  function onMove(cellid: string) {
+    if (battleship.isValidMove(cellid)) {
+      socket.emit("move", { target: cellid, roomId: room });
     }
   }
 
-  return;
-  <>
-    <Board
-      id="opponentBoard"
-      boardState={opponentState}
-      boardWidth={400}
-      rows={5}
-      cols={5}
-      onMove={onMove}
-    />
-    <div style={{ height: 20 }} />
-    <Board
-      id="playerBoard"
-      boardState={playerState}
-      boardWidth={400}
-      rows={5}
-      cols={5}
-      onMove={onMove}
-    />
-  </>;
+  const makeAMove = useCallback(
+    (move: {
+      status: string;
+      shipStatus: string | undefined;
+      gameOver: boolean;
+      turn: string;
+      playerBoard: string[][];
+      opponentBoard: string[][];
+    }) => {
+      try {
+        // Set model state
+        battleship.move(move);
+
+        setOpponentBoard(battleship.opponentBoard);
+        setPlayerBoard(battleship.playerBoard);
+        setGameOver(battleship.isGameOver());
+        setTurn(battleship.turn);
+
+        return move.status;
+      } catch (e) {
+        return null;
+      }
+    },
+    [battleship]
+  );
+
+  useEffect(() => {
+    socket.on("move", (move) => {
+      if (move.error) {
+        console.log("error", move.error);
+        return;
+      }
+      makeAMove(move);
+    });
+  }, [makeAMove]);
+
+  useEffect(() => {
+    socket.on("setup", (response) => {
+      if (response.error) {
+        console.log("error", response.error);
+      } else {
+        console.log("setup", response.msg);
+        ready();
+        setSetup(false);        
+      }
+    });
+  }, [ready]);
+
+  useEffect(() => {
+    socket.on('closeRoom', ({ roomId }) => {
+      if (roomId === room) {
+        cleanup();
+      }
+    });
+  }, [room, cleanup]);
+
+  return (
+    <>
+      <div style={{ height: 30 }}>Room: {room}</div>
+      <div style={{ height: 30 }}>Turn: {setup ? "Setup" : turn}</div>
+      <div style={{ height: 30 }}>{`${
+        !players[1]
+          ? "Waiting for opponent"
+          : orientation === "Axis"
+          ? players[1].username
+          : players[0].username
+      }\'s Fleet`}</div>
+      <Board
+        id="opponentBoard"
+        boardState={opponentBoard}
+        boardWidth={400}
+        rows={BOARD_SIZE}
+        cols={BOARD_SIZE}
+        onMove={setup || gameOver ? () => {} : onMove}
+      />
+      <div style={{ height: 30 }}>{`${username}\'s Fleet`}</div>
+      <Board
+        id="playerBoard"
+        boardState={playerBoard}
+        boardWidth={400}
+        rows={BOARD_SIZE}
+        cols={BOARD_SIZE}
+        onMove={setup ? onDrop : () => {}}
+      />
+      {setup && <button onClick={onReady}>Ready</button>}
+      <CustomDialog // Game Over CustomDialog
+        open={Boolean(gameOver)}
+        title={"Game Over"}
+        contentText={battleship.turn === orientation ? "You Win!" : "You Lose!"}
+        handleContinue={() => {
+          socket.emit("closeRoom", { roomId: room });
+          cleanup();
+        }}
+      >
+        <div>Click Continue to go back to lobby</div>
+      </CustomDialog>
+    </>
+  );
 }
 
 export default Game;
