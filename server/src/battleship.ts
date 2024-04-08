@@ -7,7 +7,7 @@
 // TODO: check sunk ship
 // TODO: check winner
 
-const BOARD_SIZE = 5;
+const BOARD_SIZE = 10;
 
 class Game {
   _setupPhase: boolean;

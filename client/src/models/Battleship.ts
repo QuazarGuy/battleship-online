@@ -1,4 +1,4 @@
-import { getCoords } from "../utils/consts";
+import { BOARD_SIZE, getCoords } from "../utils/consts";
 
 export class Battleship {
   private _setupPhase: boolean;
@@ -11,7 +11,7 @@ export class Battleship {
   private _playerShips: Map<string, number>;
   private _gameOver: boolean;
 
-  constructor(orientation: string, rows = 5, cols = 5) {
+  constructor(orientation: string, rows = BOARD_SIZE, cols = BOARD_SIZE) {
     this._setupPhase = true;
     this._orientation = orientation;
     this._turn = "Axis";

@@ -1,3 +1,5 @@
+export const BOARD_SIZE = 10;
+
 export function COLUMNS(cols: number): readonly number[] {
     return Object.freeze(new Array(cols).fill(0).map((_, i) => i + 1));
 }

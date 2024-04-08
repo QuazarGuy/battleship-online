@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import CustomDialog from "./CustomDialog";
+import { BOARD_SIZE } from "../utils/consts";
 import { Board } from "./Board";
 import { Battleship } from "../models/Battleship";
 import { socket } from "../socket";
@@ -119,8 +120,8 @@ function Game({ room, orientation, username, players, cleanup }: Props) {
         id="opponentBoard"
         boardState={opponentBoard}
         boardWidth={400}
-        rows={5}
-        cols={5}
+        rows={BOARD_SIZE}
+        cols={BOARD_SIZE}
         onMove={setup || gameOver ? () => {} : onMove}
       />
       <div style={{ height: 30 }}>{`${username}\'s Fleet`}</div>
@@ -128,8 +129,8 @@ function Game({ room, orientation, username, players, cleanup }: Props) {
         id="playerBoard"
         boardState={playerBoard}
         boardWidth={400}
-        rows={5}
-        cols={5}
+        rows={BOARD_SIZE}
+        cols={BOARD_SIZE}
         onMove={setup ? onDrop : () => {}}
       />
       {setup && <button onClick={onReady}>Ready</button>}
