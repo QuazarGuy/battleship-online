@@ -1,4 +1,4 @@
-import { BOARD_SIZE, getCoords } from "../utils/consts";
+import { BOARD_SIZE, SHIP_SIZES, getCoords } from "../utils/consts";
 
 export class Battleship {
   private _setupPhase: boolean;
@@ -56,33 +56,66 @@ export class Battleship {
   }
 
   updatePlayerBoard(update: string[][]): string[][] {
-    this._playerBoard = JSON.parse(JSON.stringify(this._playerBoard))
+    this._playerBoard = JSON.parse(JSON.stringify(this._playerBoard));
     for (let i = 0; i < this._rows; i++) {
       for (let j = 0; j < this._cols; j++) {
-        this._playerBoard[i][j] = update[i][j] === "hit" || update[i][j] === "miss" ? update[i][j] : this._playerBoard[i][j];
+        this._playerBoard[i][j] =
+          update[i][j] === "hit" || update[i][j] === "miss"
+            ? update[i][j]
+            : this._playerBoard[i][j];
       }
     }
-    
+
     return this._playerBoard;
   }
 
-  // TODO: For setup phase refer to chess.js load method
-  // https://github.com/jhlywa/chess.js/blob/master/src/chess.ts#L585
-
-  // TODO: Check if all enemy ships are sunk
   isGameOver(): boolean {
     return this._gameOver;
   }
 
-  addShip(cellid: string): void {
-    if (this._setupPhase) {
-      const [row, col] = getCoords(cellid);
-      this._playerBoard[row][col] = "ship";
-      this._playerBoard = JSON.parse(JSON.stringify(this._playerBoard));
-      this._playerShips.set("ship", (this._playerShips.get("ship") ?? 0) + 1);
-      console.log("playerShips: ", this._playerShips);
+  isValidShipPlacement(
+    target: string,
+    orientation: string,
+    shipType: string
+  ): boolean {
+    const [row, col] = getCoords(target);
+    const shipSize = SHIP_SIZES.get(shipType) ?? 0;
+    if (orientation === "EW") {
+      if (col + shipSize > this._cols) {
+        return false;
+      }
+      for (let i = 0; i < shipSize; i++) {
+        if (this._playerBoard[row][col + i] !== "empty") {
+          return false;
+        }
+      }
     } else {
-      console.log("already setup");
+      if (row + shipSize > this._rows) {
+        return false;
+      }
+      for (let i = 0; i < shipSize; i++) {
+        if (this._playerBoard[row + i][col] !== "empty") {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
+  addShip(cellid: string, orientation: string, shipType: string): void {
+    if (this._setupPhase && !this._playerShips.has(shipType)) {
+      const [row, col] = getCoords(cellid);
+      const shipSize = SHIP_SIZES.get(shipType) ?? 0;
+      for (let i = 0; i < shipSize; i++) {
+        if (orientation === "EW") {
+          this._playerBoard[row][col + i] = shipType;
+        } else {
+          this._playerBoard[row + i][col] = shipType;
+        }
+      }
+      this._playerBoard = JSON.parse(JSON.stringify(this._playerBoard));
+
+      this._playerShips.set(shipType, shipSize);
     }
   }
 
@@ -91,7 +124,6 @@ export class Battleship {
   }
 
   isValidMove(target: string): boolean {
-    console.log("battleship", target);
     const [targetRow, targetCol] = getCoords(target);
     if (this._setupPhase || this._turn !== this._orientation) {
       console.log("not your turn");

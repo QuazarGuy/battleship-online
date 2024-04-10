@@ -1,11 +1,4 @@
-// DONE: maintain state to dedupe moves
-// TODO: reset button
-// DONE: turns
-// DONE: 2 players
-// TODO: introduce setup phase
 // TODO: validate ship placement
-// TODO: check sunk ship
-// TODO: check winner
 
 const BOARD_SIZE = 10;
 
@@ -40,11 +33,11 @@ class Game {
   }
 
   setup(playerId: string, board: string[][], ships: string[][]): object {
-    const player = this._players.get(playerId)
+    const player = this._players.get(playerId);
     if (!player) {
       return {
-        error: "player not found"
-      }
+        error: "player not found",
+      };
     }
     player.shipPlacement = board;
     player.ships = ships;
@@ -59,11 +52,11 @@ class Game {
       }
       return {
         error: "waiting for opponent",
-      }
+      };
     } catch (error) {
       return {
         error: "no opponent found",
-      }
+      };
     }
   }
 
@@ -107,18 +100,22 @@ class Game {
     }
 
     const opponent = this._players.get(this.getOpponentId(data.playerId));
-    let [moveRow, moveCol] = this.getCoords(data.target);
+    const [moveRow, moveCol] = this.getCoords(data.target);
     if (opponent && !opponent?.isAttacked(moveRow, moveCol)) {
       opponent.setAttacked(moveRow, moveCol);
     }
-    if (!opponent?.isGameOver()) {
+    const gameOver = opponent?.isGameOver();
+    if (!gameOver) {
       this._turn = this._turn === "Axis" ? "Allies" : "Axis";
     }
 
     return {
       status: opponent?.getStatus(moveRow, moveCol),
-      shipStatus: opponent?.getStatus(moveRow, moveCol) === "hit" ? opponent?.isSunk(moveRow, moveCol) : undefined,
-      gameOver: opponent?.isGameOver(),
+      shipStatus:
+        opponent?.getStatus(moveRow, moveCol) === "hit"
+          ? opponent?.isSunk(moveRow, moveCol)
+          : undefined,
+      gameOver: gameOver,
       turn: this._turn,
       playerBoard: player?.board,
       opponentBoard: opponent?.board,
@@ -132,7 +129,7 @@ class Game {
   // Throws if there is no opponent
   getOpponentId(playerId: string): string {
     if (this._playerList.length < 2) {
-      throw new Error("no opponent found"); 
+      throw new Error("no opponent found");
     }
     const opponentId =
       this._playerList[0] === playerId
@@ -191,8 +188,16 @@ class Player {
     // TODO: Validate placement of ships
   }
 
-  set ships(ships: string[][]) {
+  set ships(ships: string[][] | undefined) {
     this._ships = new Map<string, Ship>();
+    if (!ships) {
+      this._ships.set("Carrier", new Ship(5));
+      this._ships.set("Battleship", new Ship(4));
+      this._ships.set("Cruiser", new Ship(3));
+      this._ships.set("Submarine", new Ship(3));
+      this._ships.set("Destroyer", new Ship(2));
+      return;
+    }
     for (const ship of ships) {
       this._ships.set(ship[0], new Ship(parseInt(ship[1])));
     }

@@ -22,10 +22,6 @@ function App() {
   }, []);
 
   useEffect(() => {
-    // const username = prompt("Username");
-    // setUsername(username);
-    // socket.emit("username", username);
-
     socket.on("opponentJoined", (roomData) => {
       console.log("roomData", roomData);
       setPlayers(roomData.players);
@@ -53,7 +49,7 @@ function App() {
           name="username"
           value={username}
           required
-          onChange={(e) => setUsername(e.target.value)} // update username state with value
+          onChange={(e) => setUsername(e.target.value)}
           type="text"
           fullWidth
           variant="standard"
