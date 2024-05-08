@@ -1,6 +1,7 @@
 import { Cell } from "./Cell";
 import { Notation } from "./Notation";
 import { getRow, getColumn } from "../utils/consts";
+import {Droppable} from '../utils/Droppable';
 
 interface Props {
   id: string;
@@ -41,21 +42,23 @@ export function Board({
             {[...Array(cols)].map((_, c) => {
               const col = getColumn(c);
               return (
-                <Cell
-                  key={`${row}-${col}`}
-                  cellid={`${row}-${col}`}
-                  state={boardState[r][c]}
-                  hover={hoverState ? hoverState[r][c] : false}
-                  hoverColor={hoverColor}
-                  boardWidth={boardWidth}
-                  colCount={cols}
-                  onMove={() => onMove(`${row}-${col}`)}
-                  onHover={() => onHover(`${row}-${col}`)}
-                >
-                  {showBoardNotation && (
-                    <Notation row={row} col={col} boardWidth={boardWidth} />
-                  )}
-                </Cell>
+                <Droppable key={`${row}-${col}`}>
+                  <Cell
+                    key={`${row}-${col}`}
+                    cellid={`${row}-${col}`}
+                    state={boardState[r][c]}
+                    hover={hoverState ? hoverState[r][c] : false}
+                    hoverColor={hoverColor}
+                    boardWidth={boardWidth}
+                    colCount={cols}
+                    onMove={() => onMove(`${row}-${col}`)}
+                    onHover={() => onHover(`${row}-${col}`)}
+                  >
+                    {showBoardNotation && (
+                      <Notation row={row} col={col} boardWidth={boardWidth} />
+                    )}
+                  </Cell>
+                </Droppable>
               );
             })}
           </div>

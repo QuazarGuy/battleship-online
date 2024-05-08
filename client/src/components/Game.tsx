@@ -5,6 +5,10 @@ import { Board } from "./Board";
 import { Battleship } from "../models/Battleship";
 import { socket } from "../socket";
 import GameViewHelper from "../utils/GameViewHelper";
+import { DndContext, DragOverlay } from "@dnd-kit/core";
+import { Draggable } from "../utils/Draggable";
+import { Ship } from "./Ship";
+import { Droppable } from "../utils/Droppable";
 
 type Player = {
   username: string;
@@ -196,18 +200,32 @@ function Game({ room, orientation, username, players, cleanup }: Props) {
         </button>
       )}
       {readyEnabled && <button onClick={onReady}>Ready</button>}
-      <div style={{ height: 30 }}>{`${username}\'s Fleet`}</div>
-      <Board
-        id="playerBoard"
-        boardState={playerBoard}
-        hoverState={!readyEnabled ? playerBoardHover : undefined}
-        hoverColor={hoverColor}
-        boardWidth={400}
-        rows={BOARD_SIZE}
-        cols={BOARD_SIZE}
-        onMove={setup ? onDrop : () => {}}
-        onHover={setup ? onShipHover : () => {}}
-      />
+      <div>
+        {`${username}\'s Fleet`}
+        <DndContext>
+          <DragOverlay>
+            <Draggable id="carrier" element="ship">
+              <Ship ship="Carrier">
+                <img src="../../public/carrier.svg" width="250" height="50" />
+              </Ship>
+            </Draggable>
+          </DragOverlay>
+
+          <Droppable>
+            <Board
+              id="playerBoard"
+              boardState={playerBoard}
+              hoverState={!readyEnabled ? playerBoardHover : undefined}
+              hoverColor={hoverColor}
+              boardWidth={400}
+              rows={BOARD_SIZE}
+              cols={BOARD_SIZE}
+              onMove={setup ? onDrop : () => {}}
+              onHover={setup ? onShipHover : () => {}}
+            />
+          </Droppable>
+        </DndContext>
+      </div>
       <CustomDialog // Game Over Dialog
         open={Boolean(gameOver)}
         title={"Game Over"}
