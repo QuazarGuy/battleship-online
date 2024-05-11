@@ -40,6 +40,7 @@ function Game({ room, orientation, username, players, cleanup }: Props) {
   const [readyEnabled, setReadyEnabled] = useState(false);
   const [turn, setTurn] = useState("Axis");
   const [gameOver, setGameOver] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
   const [shipDirection, setShipDirection] = useState("EW");
   const [shipTypeIndex, setShipTypeIndex] = useState(0);
   const shipTypes = [
@@ -170,6 +171,14 @@ function Game({ room, orientation, username, players, cleanup }: Props) {
     });
   }, [room, cleanup]);
 
+  function handleDragStart() {
+    setIsDragging(true);
+  }
+  
+  function handleDragEnd() {
+    setIsDragging(false);
+  }
+
   return (
     <>
       <div style={{ height: 30 }}>Room: {room}</div>
@@ -202,28 +211,34 @@ function Game({ room, orientation, username, players, cleanup }: Props) {
       {readyEnabled && <button onClick={onReady}>Ready</button>}
       <div>
         {`${username}\'s Fleet`}
-        <DndContext>
-          <DragOverlay>
+        <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+          
             <Draggable id="carrier" element="ship">
               <Ship ship="Carrier">
                 <img src="../../public/carrier.svg" width="250" height="50" />
               </Ship>
             </Draggable>
+          <DragOverlay>
+          {isDragging ? (
+          <Ship ship="Carrier">
+          <img src="../../public/carrier.svg" width="250" height="50" />
+        </Ship>
+        ): null}
           </DragOverlay>
-
-          <Droppable>
-            <Board
-              id="playerBoard"
-              boardState={playerBoard}
-              hoverState={!readyEnabled ? playerBoardHover : undefined}
-              hoverColor={hoverColor}
-              boardWidth={400}
-              rows={BOARD_SIZE}
-              cols={BOARD_SIZE}
-              onMove={setup ? onDrop : () => {}}
-              onHover={setup ? onShipHover : () => {}}
-            />
-          </Droppable>
+              <Board
+                id="playerBoard"
+                boardState={playerBoard}
+                hoverState={!readyEnabled ? playerBoardHover : undefined}
+                hoverColor={hoverColor}
+                boardWidth={400}
+                rows={BOARD_SIZE}
+                cols={BOARD_SIZE}
+                onMove={setup ? onDrop : () => {}}
+                onHover={setup ? onShipHover : () => {}}
+              />
+              <Droppable>
+                <div style={{ height: 30 }}>Your Fleet</div>
+              </Droppable>
         </DndContext>
       </div>
       <CustomDialog // Game Over Dialog
