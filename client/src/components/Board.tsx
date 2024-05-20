@@ -42,7 +42,7 @@ export function Board({
             {[...Array(cols)].map((_, c) => {
               const col = getColumn(c);
               return (
-                // <Droppable key={`${row}-${col}`}>
+                <Droppable id={`${row}-${col}`}>
                   <Cell
                     key={`${row}-${col}`}
                     cellid={`${row}-${col}`}
@@ -58,7 +58,7 @@ export function Board({
                       <Notation row={row} col={col} boardWidth={boardWidth} />
                     )}
                   </Cell>
-                // </Droppable>
+                </Droppable>
               );
             })}
           </div>

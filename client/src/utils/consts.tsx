@@ -36,5 +36,8 @@ export function getRow(row: number): string {
 
 export function getCoords(cell: string): [number, number] {
   const [row, col] = cell.split("-");
+  if (col === undefined || row === undefined) {
+    return [0, 0];
+  }
   return [row.charCodeAt(0) - "A".charCodeAt(0), parseInt(col) - 1];
 }

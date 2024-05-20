@@ -1,8 +1,12 @@
+import { RectMap } from "@dnd-kit/core/dist/store";
+import { Coordinates } from "@dnd-kit/core/dist/types";
 import { BOARD_SIZE, SHIP_SIZES, getCoords } from "./consts";
+import { Active, Collision, CollisionDetection, DroppableContainer, closestCenter } from "@dnd-kit/core";
 
 export default class GameViewHelper {
   opponentBoardHover: boolean[][];
   playerBoardHover: boolean[][];
+  static customCollisionCheck: CollisionDetection | undefined;
 
   constructor() {
     this.opponentBoardHover = this.initializeBoardHover();
@@ -47,5 +51,20 @@ export default class GameViewHelper {
     this.opponentBoardHover = JSON.parse(
       JSON.stringify(this.opponentBoardHover)
     );
+  }
+
+  // Sets the collision point to the left side of the ship
+  customCollisionCheck(
+    args: {
+      active: Active;
+      collisionRect: ClientRect;
+      droppableRects: RectMap;
+      droppableContainers: DroppableContainer[];
+      pointerCoordinates: Coordinates | null;
+  }): Collision[] {
+    console.log(args.active);
+    return closestCenter({
+      ...args,
+    });
   }
 }

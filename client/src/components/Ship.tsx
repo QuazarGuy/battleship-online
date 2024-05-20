@@ -1,3 +1,5 @@
+import { defaultAnnouncements, useDndMonitor } from "@dnd-kit/core";
+
 export function Ship(props: {
   ship: string;
   children:
@@ -10,7 +12,13 @@ export function Ship(props: {
     | null
     | undefined;
 }) {
-  const { ship } = props;
-
+  useDndMonitor({
+    onDragStart(event) {},
+    onDragMove(event) {},
+    onDragOver(event) {},
+    onDragEnd(event) {},
+    onDragCancel(event) {},
+  });
+  
   return <>{props.children}</>;
 }

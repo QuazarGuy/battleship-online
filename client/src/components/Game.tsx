@@ -5,10 +5,17 @@ import { Board } from "./Board";
 import { Battleship } from "../models/Battleship";
 import { socket } from "../socket";
 import GameViewHelper from "../utils/GameViewHelper";
-import { DndContext, DragOverlay } from "@dnd-kit/core";
+import {
+  DndContext,
+  DragEndEvent,
+  DragOverEvent,
+  DragOverlay,
+  closestCenter,
+} from "@dnd-kit/core";
 import { Draggable } from "../utils/Draggable";
 import { Ship } from "./Ship";
 import { Droppable } from "../utils/Droppable";
+import { DndMonitorContext } from "../components/DndMonitorContext";
 
 type Player = {
   username: string;
@@ -40,7 +47,8 @@ function Game({ room, orientation, username, players, cleanup }: Props) {
   const [readyEnabled, setReadyEnabled] = useState(false);
   const [turn, setTurn] = useState("Axis");
   const [gameOver, setGameOver] = useState(false);
-  const [isDragging, setIsDragging] = useState(false);
+  // const [isDragging, setIsDragging] = useState(false);
+  // const [over, setOver] = useState("null");
   const [shipDirection, setShipDirection] = useState("EW");
   const [shipTypeIndex, setShipTypeIndex] = useState(0);
   const shipTypes = [
@@ -71,7 +79,7 @@ function Game({ room, orientation, username, players, cleanup }: Props) {
     setPlayerBoardHover(gameView.playerBoardHover);
   }
 
-  function onDrop(cellid: string) {
+  function onDrop(cellid: string): boolean {
     if (
       !battleship.isValidShipPlacement(
         cellid,
@@ -79,7 +87,7 @@ function Game({ room, orientation, username, players, cleanup }: Props) {
         shipTypes[shipTypeIndex]
       )
     ) {
-      return;
+      return false;
     }
     battleship.addShip(cellid, shipDirection, shipTypes[shipTypeIndex]);
     setPlayerBoard(battleship.playerBoard);
@@ -91,6 +99,7 @@ function Game({ room, orientation, username, players, cleanup }: Props) {
       setSetup(false);
       setReadyEnabled(true);
     }
+    return true;
   }
 
   function onReady() {
@@ -172,11 +181,26 @@ function Game({ room, orientation, username, players, cleanup }: Props) {
   }, [room, cleanup]);
 
   function handleDragStart() {
-    setIsDragging(true);
+    // setIsDragging(true);
   }
-  
-  function handleDragEnd() {
-    setIsDragging(false);
+
+  function handleDragOver(event: DragOverEvent) {
+    let cellid = event.over?.id.toString().substring(10);
+    if (cellid !== undefined && cellid !== null) {
+      onShipHover(cellid);
+    }
+    // setOver(event.over === null ? "null" : event.over.id.toString());
+  }
+
+  function handleDragEnd(event: DragEndEvent) {
+    console.log(event);
+    let cellid = event.over?.id.toString().substring(10);
+    if (cellid !== undefined && cellid !== null) {
+      onDrop(cellid);
+    }
+    // placeShip(cellid, shipDirection, shipTypes[shipTypeIndex]);
+    // setOver("null");
+    // setIsDragging(false);
   }
 
   return (
@@ -211,34 +235,36 @@ function Game({ room, orientation, username, players, cleanup }: Props) {
       {readyEnabled && <button onClick={onReady}>Ready</button>}
       <div>
         {`${username}\'s Fleet`}
-        <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-          
-            <Draggable id="carrier" element="ship">
+        <DndContext
+          collisionDetection={GameViewHelper.customCollisionCheck}
+          onDragStart={handleDragStart}
+          onDragOver={handleDragOver}
+          onDragEnd={handleDragEnd}
+        >
+          <DndMonitorContext />
+          <Draggable id="carrier" element="ship">
+            <Ship ship="Carrier">
+              <img src="/carrier.svg" width="250" height="50" />
+            </Ship>
+          </Draggable>
+          {/* <DragOverlay>
+            {isDragging ? (
               <Ship ship="Carrier">
-                <img src="../../public/carrier.svg" width="250" height="50" />
+                <img src="../../carrier.svg" width="250" height="50" />
               </Ship>
-            </Draggable>
-          <DragOverlay>
-          {isDragging ? (
-          <Ship ship="Carrier">
-          <img src="../../public/carrier.svg" width="250" height="50" />
-        </Ship>
-        ): null}
-          </DragOverlay>
-              <Board
-                id="playerBoard"
-                boardState={playerBoard}
-                hoverState={!readyEnabled ? playerBoardHover : undefined}
-                hoverColor={hoverColor}
-                boardWidth={400}
-                rows={BOARD_SIZE}
-                cols={BOARD_SIZE}
-                onMove={setup ? onDrop : () => {}}
-                onHover={setup ? onShipHover : () => {}}
-              />
-              <Droppable>
-                <div style={{ height: 30 }}>Your Fleet</div>
-              </Droppable>
+            ) : null}
+          </DragOverlay> */}
+          <Board
+            id="playerBoard"
+            boardState={playerBoard}
+            hoverState={!readyEnabled ? playerBoardHover : undefined}
+            hoverColor={hoverColor}
+            boardWidth={400}
+            rows={BOARD_SIZE}
+            cols={BOARD_SIZE}
+            onMove={setup ? onDrop : () => {}}
+            onHover={setup ? onShipHover : () => {}}
+          />
         </DndContext>
       </div>
       <CustomDialog // Game Over Dialog

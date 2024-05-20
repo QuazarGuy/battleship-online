@@ -7,6 +7,16 @@
   flex-wrap: nowrap;
 }
 
+.draggable {
+  background-color: #00000000;
+  border: transparent;
+  outline: none;
+}
+
+button.draggable {
+  outline: none;
+}
+
 /* .cell {
   border: thin solid grey;
 } */
