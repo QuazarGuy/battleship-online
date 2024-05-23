@@ -5,14 +5,6 @@ import { Board } from "./Board";
 import { Battleship } from "../models/Battleship";
 import { socket } from "../socket";
 import GameViewHelper from "../utils/GameViewHelper";
-import {
-  ClientRect,
-  DndContext,
-  DragEndEvent,
-  DragOverEvent,
-  UniqueIdentifier,
-} from "@dnd-kit/core";
-import { Draggable } from "../utils/Draggable";
 import { Ship } from "./Ship";
 
 type Player = {
@@ -39,15 +31,12 @@ function Game({ room, orientation, username, players, cleanup }: Props) {
   const [playerBoardHover, setPlayerBoardHover] = useState(
     gameView.playerBoardHover
   );
-  const [shipLayout, setShipLayout] = useState(gameView.initializeShipLayout());
   const [hoverColor, setHoverColor] = useState("white");
   const [setup, setSetup] = useState(true);
   const [playersReady, setPlayersReady] = useState(false);
   const [readyEnabled, setReadyEnabled] = useState(false);
   const [turn, setTurn] = useState("Axis");
   const [gameOver, setGameOver] = useState(false);
-  // const [isDragging, setIsDragging] = useState(false);
-  // const [over, setOver] = useState("null");
   const [shipDirection, setShipDirection] = useState("EW");
   const [shipTypeIndex, setShipTypeIndex] = useState(0);
   const shipTypes = [
@@ -179,131 +168,68 @@ function Game({ room, orientation, username, players, cleanup }: Props) {
     });
   }, [room, cleanup]);
 
-  function handleDragStart() {
-    // setIsDragging(true);
-  }
-
-  function handleDragOver(event: DragOverEvent) {
-    let cellid = event.over?.id.toString().substring(10);
-    if (cellid !== undefined && cellid !== null) {
-      onShipHover(cellid);
-    }
-    // setOver(event.over === null ? "null" : event.over.id.toString());
-  }
-
-  function handleDragEnd(event: DragEndEvent) {
-    console.log(event);
-    let cellid = event.over?.id.toString().substring(10);
-    if (cellid !== undefined && cellid !== null && onDrop(cellid)) {
-      placeShip(
-        event.active.id,
-        event.over?.rect,
-        shipDirection,
-        shipTypes[shipTypeIndex]
-      );  
-    }
-    // placeShip(cellid, shipDirection, shipTypes[shipTypeIndex]);
-    // setOver("null");
-    // setIsDragging(false);
-  }
-
-  function placeShip(
-    id: UniqueIdentifier,
-    rect: ClientRect | undefined,
-    direction: string,
-    type: string
-  ) {
-    if (rect === undefined) {
-      return;
-    }
-    let x = rect.left;
-    let y = rect.top;
-
-    return (
-      <>
-        <div style={{ height: 30 }}>Room: {room}</div>
-        <div style={{ height: 30 }}>Turn: {setup ? "Setup" : turn}</div>
-        <div style={{ height: 30 }}>{`${
-          !players[1]
-            ? "Waiting for opponent"
-            : orientation === "Axis"
-            ? players[1].username
-            : players[0].username
-        }\'s Fleet`}</div>
+  return (
+    <>
+      <div style={{ height: 30 }}>Room: {room}</div>
+      <div style={{ height: 30 }}>Turn: {setup ? "Setup" : turn}</div>
+      <div style={{ height: 30 }}>{`${
+        !players[1]
+          ? "Waiting for opponent"
+          : orientation === "Axis"
+          ? players[1].username
+          : players[0].username
+      }\'s Fleet`}</div>
+      <Board
+        id="opponentBoard"
+        boardState={opponentBoard}
+        hoverState={playersReady && !gameOver ? opponentBoardHover : undefined}
+        hoverColor={hoverColor}
+        boardWidth={400}
+        rows={BOARD_SIZE}
+        cols={BOARD_SIZE}
+        onMove={playersReady && !gameOver ? onMove : () => {}}
+        onHover={playersReady && !gameOver ? onHover : () => {}}
+      />
+      {setup && (
+        <button
+          onClick={() => setShipDirection(shipDirection === "EW" ? "NS" : "EW")}
+        >
+          Toggle ship direction
+        </button>
+      )}
+      {readyEnabled && <button onClick={onReady}>Ready</button>}
+      <div>
+        {`${username}\'s Fleet`}
+        <div>
+          <Ship ship="Carrier">
+            <img src="/carrier.svg" width="250" height="50" />
+          </Ship>
+        </div>
         <Board
-          id="opponentBoard"
-          boardState={opponentBoard}
-          hoverState={
-            playersReady && !gameOver ? opponentBoardHover : undefined
-          }
+          id="playerBoard"
+          boardState={playerBoard}
+          hoverState={!readyEnabled ? playerBoardHover : undefined}
           hoverColor={hoverColor}
           boardWidth={400}
           rows={BOARD_SIZE}
           cols={BOARD_SIZE}
-          onMove={playersReady && !gameOver ? onMove : () => {}}
-          onHover={playersReady && !gameOver ? onHover : () => {}}
+          onMove={setup ? onDrop : () => {}}
+          onHover={setup ? onShipHover : () => {}}
         />
-        {setup && (
-          <button
-            onClick={() =>
-              setShipDirection(shipDirection === "EW" ? "NS" : "EW")
-            }
-          >
-            Toggle ship direction
-          </button>
-        )}
-        {readyEnabled && <button onClick={onReady}>Ready</button>}
-        <div>
-          {`${username}\'s Fleet`}
-          <DndContext
-            collisionDetection={GameViewHelper.customCollisionCheck}
-            onDragStart={handleDragStart}
-            onDragOver={handleDragOver}
-            onDragEnd={handleDragEnd}
-          >
-            <div>
-              <Draggable id="carrier" element="ship">
-                <Ship ship="Carrier">
-                  <img src="/carrier.svg" width="250" height="50" />
-                </Ship>
-              </Draggable>
-            </div>
-            {/* <DragOverlay>
-            {isDragging ? (
-              <Ship ship="Carrier">
-                <img src="../../carrier.svg" width="250" height="50" />
-              </Ship>
-            ) : null}
-          </DragOverlay> */}
-            <Board
-              id="playerBoard"
-              boardState={playerBoard}
-              hoverState={!readyEnabled ? playerBoardHover : undefined}
-              hoverColor={hoverColor}
-              boardWidth={400}
-              rows={BOARD_SIZE}
-              cols={BOARD_SIZE}
-              onMove={setup ? onDrop : () => {}}
-              onHover={setup ? onShipHover : () => {}}
-            />
-          </DndContext>
-        </div>
-        <CustomDialog // Game Over Dialog
-          open={Boolean(gameOver)}
-          title={"Game Over"}
-          contentText={
-            battleship.turn === orientation ? "You Win!" : "You Lose!"
-          }
-          handleContinue={() => {
-            socket.emit("closeRoom", { roomId: room });
-            cleanup();
-          }}
-        >
-          <div>Click Continue to go back to lobby</div>
-        </CustomDialog>
-      </>
-    );
-  }
+      </div>
+      <CustomDialog // Game Over Dialog
+        open={Boolean(gameOver)}
+        title={"Game Over"}
+        contentText={battleship.turn === orientation ? "You Win!" : "You Lose!"}
+        handleContinue={() => {
+          socket.emit("closeRoom", { roomId: room });
+          cleanup();
+        }}
+      >
+        <div>Click Continue to go back to lobby</div>
+      </CustomDialog>
+    </>
+  );
 }
 
 export default Game;
