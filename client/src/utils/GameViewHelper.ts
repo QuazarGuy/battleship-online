@@ -25,6 +25,18 @@ export default class GameViewHelper {
     return boardHover;
   }
 
+  initializeShipLayout(): any[][] {
+    let shipLayout = [];
+    for (let i = 0; i < BOARD_SIZE; i++) {
+      let row = [];
+      for (let j = 0; j < BOARD_SIZE; j++) {
+        row.push("empty");
+      }
+      shipLayout.push(row);
+    }
+    return shipLayout;
+  }
+
   setPlayerBoardHover(cellid: string, orientation: string, shipType: string) {
     const [row, col] = getCoords(cellid);
     const shipSize = SHIP_SIZES.get(shipType) ?? 0;

@@ -49,7 +49,8 @@ export function Board({
                     state={boardState[r][c]}
                     hover={hoverState ? hoverState[r][c] : false}
                     hoverColor={hoverColor}
-                    boardWidth={boardWidth}
+                    // subtract width of cell and board borders
+                    boardWidth={boardWidth-(cols+3)}
                     colCount={cols}
                     onMove={() => onMove(`${row}-${col}`)}
                     onHover={() => onHover(`${row}-${col}`)}
