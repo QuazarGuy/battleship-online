@@ -15,6 +15,11 @@ interface Props {
   onHover: (cellid: string) => void;
 }
 
+function renderShip(r: string, c: string, state: string) {
+  const ship = state === "carrier" ? <img src="./carrier.svg" width="250" height="50" /> : null;
+  return <div>{ship}</div>;
+}
+
 export function Board({
   id,
   boardState,
@@ -42,7 +47,7 @@ export function Board({
             {[...Array(cols)].map((_, c) => {
               const col = getColumn(c);
               return (
-                <Droppable id={`${row}-${col}`}>
+                <Droppable key={`droppable-${row}-${col}`} id={`${row}-${col}}`}>
                   <Cell
                     key={`${row}-${col}`}
                     cellid={`${row}-${col}`}
@@ -58,6 +63,7 @@ export function Board({
                     {showBoardNotation && (
                       <Notation row={row} col={col} boardWidth={boardWidth} />
                     )}
+                    {renderShip(row, col, boardState[r][c])}
                   </Cell>
                 </Droppable>
               );

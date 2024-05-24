@@ -53,6 +53,7 @@ function App() {
           type="text"
           fullWidth
           variant="standard"
+          autoComplete="off"
         />
       </CustomDialog>
       {room ? (

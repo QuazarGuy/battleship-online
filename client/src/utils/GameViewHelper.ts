@@ -25,7 +25,7 @@ export default class GameViewHelper {
     return boardHover;
   }
 
-  initializeShipLayout(): any[][] {
+  initializeShipLayout(): string[][] {
     let shipLayout = [];
     for (let i = 0; i < BOARD_SIZE; i++) {
       let row = [];

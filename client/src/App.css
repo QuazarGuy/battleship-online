@@ -11,10 +11,22 @@
   background-color: #00000000;
   border: transparent;
   outline: none;
+  z-index: 100;
 }
 
 button.draggable {
   outline: none;
+  z-index: 100;
+}
+
+button.draggable img {
+  position: relative;
+  z-index: 100;
+}
+
+.cell img {
+  position: relative;
+  z-index: 1;
 }
 
 /* .cell {

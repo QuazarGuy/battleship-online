@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import CustomDialog from "./CustomDialog";
-import { BOARD_SIZE } from "../utils/consts";
+import { BOARD_SIZE, getCoords } from "../utils/consts";
 import { Board } from "./Board";
 import { Battleship } from "../models/Battleship";
 import { socket } from "../socket";
@@ -196,11 +196,10 @@ function Game({ room, orientation, username, players, cleanup }: Props) {
     let cellid = event.over?.id.toString().substring(10);
     if (cellid !== undefined && cellid !== null && onDrop(cellid)) {
       placeShip(
-        event.active.id,
-        event.over?.rect,
+        event.over?.id.toString().substring(10),
         shipDirection,
         shipTypes[shipTypeIndex]
-      );  
+      );
     }
     // placeShip(cellid, shipDirection, shipTypes[shipTypeIndex]);
     // setOver("null");
@@ -208,102 +207,93 @@ function Game({ room, orientation, username, players, cleanup }: Props) {
   }
 
   function placeShip(
-    id: UniqueIdentifier,
-    rect: ClientRect | undefined,
+    id: string,
     direction: string,
     type: string
   ) {
-    if (rect === undefined) {
-      return;
-    }
-    let x = rect.left;
-    let y = rect.top;
+    const [row, col] = getCoords(id);
+    setShipLayout[row][col] = type;
+    
+  }
 
-    return (
-      <>
-        <div style={{ height: 30 }}>Room: {room}</div>
-        <div style={{ height: 30 }}>Turn: {setup ? "Setup" : turn}</div>
-        <div style={{ height: 30 }}>{`${
-          !players[1]
-            ? "Waiting for opponent"
-            : orientation === "Axis"
-            ? players[1].username
-            : players[0].username
-        }\'s Fleet`}</div>
-        <Board
-          id="opponentBoard"
-          boardState={opponentBoard}
-          hoverState={
-            playersReady && !gameOver ? opponentBoardHover : undefined
-          }
-          hoverColor={hoverColor}
-          boardWidth={400}
-          rows={BOARD_SIZE}
-          cols={BOARD_SIZE}
-          onMove={playersReady && !gameOver ? onMove : () => {}}
-          onHover={playersReady && !gameOver ? onHover : () => {}}
-        />
-        {setup && (
-          <button
-            onClick={() =>
-              setShipDirection(shipDirection === "EW" ? "NS" : "EW")
-            }
-          >
-            Toggle ship direction
-          </button>
-        )}
-        {readyEnabled && <button onClick={onReady}>Ready</button>}
-        <div>
-          {`${username}\'s Fleet`}
-          <DndContext
-            collisionDetection={GameViewHelper.customCollisionCheck}
-            onDragStart={handleDragStart}
-            onDragOver={handleDragOver}
-            onDragEnd={handleDragEnd}
-          >
-            <div>
-              <Draggable id="carrier" element="ship">
-                <Ship ship="Carrier">
-                  <img src="/carrier.svg" width="250" height="50" />
-                </Ship>
-              </Draggable>
-            </div>
-            {/* <DragOverlay>
+  return (
+    <>
+      <div style={{ height: 30 }}>Room: {room}</div>
+      <div style={{ height: 30 }}>Turn: {setup ? "Setup" : turn}</div>
+      <div style={{ height: 30 }}>{`${
+        !players[1]
+          ? "Waiting for opponent"
+          : orientation === "Axis"
+          ? players[1].username
+          : players[0].username
+      }\'s Fleet`}</div>
+      <Board
+        id="opponentBoard"
+        boardState={opponentBoard}
+        hoverState={playersReady && !gameOver ? opponentBoardHover : undefined}
+        hoverColor={hoverColor}
+        boardWidth={400}
+        rows={BOARD_SIZE}
+        cols={BOARD_SIZE}
+        onMove={playersReady && !gameOver ? onMove : () => {}}
+        onHover={playersReady && !gameOver ? onHover : () => {}}
+      />
+      {setup && (
+        <button
+          onClick={() => setShipDirection(shipDirection === "EW" ? "NS" : "EW")}
+        >
+          Toggle ship direction
+        </button>
+      )}
+      {readyEnabled && <button onClick={onReady}>Ready</button>}
+      <div>
+        {`${username}\'s Fleet`}
+        <DndContext
+          collisionDetection={GameViewHelper.customCollisionCheck}
+          onDragStart={handleDragStart}
+          onDragOver={handleDragOver}
+          onDragEnd={handleDragEnd}
+        >
+          <div>
+            <Draggable id="carrier" element="ship">
+              <Ship ship="Carrier">
+                <img src="/carrier.svg" width="250" height="50" />
+              </Ship>
+            </Draggable>
+          </div>
+          {/* <DragOverlay>
             {isDragging ? (
               <Ship ship="Carrier">
                 <img src="../../carrier.svg" width="250" height="50" />
               </Ship>
             ) : null}
           </DragOverlay> */}
-            <Board
-              id="playerBoard"
-              boardState={playerBoard}
-              hoverState={!readyEnabled ? playerBoardHover : undefined}
-              hoverColor={hoverColor}
-              boardWidth={400}
-              rows={BOARD_SIZE}
-              cols={BOARD_SIZE}
-              onMove={setup ? onDrop : () => {}}
-              onHover={setup ? onShipHover : () => {}}
-            />
-          </DndContext>
-        </div>
-        <CustomDialog // Game Over Dialog
-          open={Boolean(gameOver)}
-          title={"Game Over"}
-          contentText={
-            battleship.turn === orientation ? "You Win!" : "You Lose!"
-          }
-          handleContinue={() => {
-            socket.emit("closeRoom", { roomId: room });
-            cleanup();
-          }}
-        >
-          <div>Click Continue to go back to lobby</div>
-        </CustomDialog>
-      </>
-    );
-  }
+          <Board
+            id="playerBoard"
+            boardState={playerBoard}
+            hoverState={!readyEnabled ? playerBoardHover : undefined}
+            hoverColor={hoverColor}
+            boardWidth={400}
+            rows={BOARD_SIZE}
+            cols={BOARD_SIZE}
+            onMove={setup ? onDrop : () => {}}
+            onHover={setup ? onShipHover : () => {}}
+          />
+        </DndContext>
+      </div>
+      <CustomDialog // Game Over Dialog
+        open={Boolean(gameOver)}
+        title={"Game Over"}
+        contentText={battleship.turn === orientation ? "You Win!" : "You Lose!"}
+        handleContinue={() => {
+          socket.emit("closeRoom", { roomId: room });
+          cleanup();
+        }}
+      >
+        <div>Click Continue to go back to lobby</div>
+      </CustomDialog>
+    </>
+  );
 }
 
 export default Game;
