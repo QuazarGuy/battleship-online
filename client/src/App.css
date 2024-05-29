@@ -29,6 +29,6 @@ button.draggable img {
   z-index: 1;
 }
 
-/* .cell {
-  border: thin solid grey;
-} */
+.cell img.carrier {
+  top: -4px
+}

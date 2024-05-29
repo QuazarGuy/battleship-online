@@ -195,25 +195,9 @@ function Game({ room, orientation, username, players, cleanup }: Props) {
     console.log(event);
     let cellid = event.over?.id.toString().substring(10);
     if (cellid !== undefined && cellid !== null && onDrop(cellid)) {
-      placeShip(
-        event.over?.id.toString().substring(10),
-        shipDirection,
-        shipTypes[shipTypeIndex]
-      );
+      gameView.setShipLayout(cellid, shipDirection, shipTypes[shipTypeIndex]);
+      setShipLayout(gameView.shipLayout);
     }
-    // placeShip(cellid, shipDirection, shipTypes[shipTypeIndex]);
-    // setOver("null");
-    // setIsDragging(false);
-  }
-
-  function placeShip(
-    id: string,
-    direction: string,
-    type: string
-  ) {
-    const [row, col] = getCoords(id);
-    setShipLayout[row][col] = type;
-    
   }
 
   return (
@@ -272,6 +256,7 @@ function Game({ room, orientation, username, players, cleanup }: Props) {
             id="playerBoard"
             boardState={playerBoard}
             hoverState={!readyEnabled ? playerBoardHover : undefined}
+            shipLayout={shipLayout}
             hoverColor={hoverColor}
             boardWidth={400}
             rows={BOARD_SIZE}

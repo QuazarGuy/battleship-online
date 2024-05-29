@@ -6,11 +6,13 @@ import { Active, Collision, CollisionDetection, DroppableContainer, closestCente
 export default class GameViewHelper {
   opponentBoardHover: boolean[][];
   playerBoardHover: boolean[][];
+  shipLayout: string[][][];
   static customCollisionCheck: CollisionDetection | undefined;
 
   constructor() {
     this.opponentBoardHover = this.initializeBoardHover();
     this.playerBoardHover = this.initializeBoardHover();
+    this.shipLayout = this.initializeShipLayout();
   }
 
   initializeBoardHover(): boolean[][] {
@@ -25,12 +27,12 @@ export default class GameViewHelper {
     return boardHover;
   }
 
-  initializeShipLayout(): string[][] {
+  initializeShipLayout(): string[][][] {
     let shipLayout = [];
     for (let i = 0; i < BOARD_SIZE; i++) {
       let row = [];
       for (let j = 0; j < BOARD_SIZE; j++) {
-        row.push("empty");
+        row.push(["empty","undefined"]);
       }
       shipLayout.push(row);
     }
@@ -63,6 +65,13 @@ export default class GameViewHelper {
     this.opponentBoardHover = JSON.parse(
       JSON.stringify(this.opponentBoardHover)
     );
+  }
+
+  setShipLayout(cellid: string, orientation: string, shipType: string) {
+    const [row, col] = getCoords(cellid);
+    this.shipLayout[row][col][0] = shipType;
+    this.shipLayout[row][col][1] = orientation;
+    this.shipLayout = JSON.parse(JSON.stringify(this.shipLayout));
   }
 
   // Sets the collision point to the left side of the ship
