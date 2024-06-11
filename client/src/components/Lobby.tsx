@@ -54,7 +54,6 @@ export default function Lobby({ setRoom, setOrientation, setPlayers }: Props) {
         open={roomDialogOpen}
         title="Opponent Selection"
         contentText="Select your opponent to play against"
-        backEnabled={true}
         handleContinue={() => {
           if (!roomSelection) return;
           socket.emit(

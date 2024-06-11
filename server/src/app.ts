@@ -1,14 +1,11 @@
-// TODO figure prod settings
-// TODO add account support
-
 import express from "express";
 import { Server } from "socket.io";
 import { Game } from "./battleship";
 import { v4 as uuidV4 } from "uuid";
 
 const app = express();
-const hostname = "192.168.1.28";
-const port = 3000;
+const hostname = process.env.NODE_ENV === 'production' ? "https://battleship-online.azurewebsites.net" : "localhost";
+const port = normalizePort(process.env.PORT || "3000");
 const websocketPort = 4000;
 // const corsPort = 5173;
 const rooms = new Map();
@@ -19,6 +16,25 @@ const io = new Server({
     // origin: `http://${hostname}:${port}`,
   },
 });
+
+/**
+ * Normalize a port into a number, string, or false.
+ */
+function normalizePort(val: string) {
+  var port = parseInt(val, 10);
+
+  if (isNaN(port)) {
+    // named pipe
+    return val;
+  }
+
+  if (port >= 0) {
+    // port number
+    return port;
+  }
+
+  return false;
+}
 
 io.listen(websocketPort);
 
