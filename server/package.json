@@ -7,7 +7,6 @@
     "start": "node ./dist/app.js",
     "build": "npx tsc",
     "dev": "npx tsc && nodemon ./dist/app.js",
-    "test": "echo \"Error: no test specified\""
   },
   "author": "Jeff Talada",
   "license": "ISC",
