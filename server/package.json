@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node ./dist/app.js",
     "build": "npx tsc",
-    "dev": "npx tsc && nodemon ./dist/app.js",
+    "dev": "npx tsc && nodemon ./dist/app.js"
   },
   "author": "Jeff Talada",
   "license": "ISC",
