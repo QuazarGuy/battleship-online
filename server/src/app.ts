@@ -6,8 +6,10 @@ import { v4 as uuidV4 } from "uuid";
 const app = express();
 const hostname = process.env.NODE_ENV === 'production' ? "https://battleship-online.azurewebsites.net" : "localhost";
 const port = normalizePort(process.env.PORT || "3000");
-const websocketPort = 4000;
-// const corsPort = 5173;
+const websocketPort = normalizePort(process.env.PORT || "4000");
+if (!websocketPort || typeof(websocketPort) !== "number" || isNaN(websocketPort)) {
+  throw new Error("Websocket port is not defined");
+}
 const rooms = new Map();
 
 const io = new Server({
