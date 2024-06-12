@@ -5,7 +5,7 @@
   "main": "./dist/app.js",
   "scripts": {
     "start": "node ./dist/app.js",
-    "build": "./node_modules/.bin/tsc",
+    "build": "./node_modules/typescript/lib/tsc",
     "dev": "tsc || ./node_modules/.bin/tsc && nodemon ./dist/app.js"
   },
   "author": "Jeff Talada",
