@@ -1,23 +1,34 @@
 import express from "express";
+import http from "http";
 import { Server } from "socket.io";
 import { Game } from "./battleship";
 import { v4 as uuidV4 } from "uuid";
 
 const app = express();
-const hostname = process.env.NODE_ENV === 'production' ? "https://battleship-online.azurewebsites.net" : "localhost";
+const server = http.createServer(app);
+const io = new Server(server);
+
 const port = normalizePort(process.env.PORT || "3000");
-const websocketPort = normalizePort(process.env.PORT || "4000");
+const websocketPort = normalizePort(process.env.PORT || "3000");
 if (!websocketPort || typeof(websocketPort) !== "number" || isNaN(websocketPort)) {
   throw new Error("Websocket port is not defined");
 }
+const hostname = port === 3000 ? "localhost" : "http://battleship-online.azurewebsites.net";
 const rooms = new Map();
 
-const io = new Server({
-  cors: {
-    origin: "*",
-    // origin: `http://${hostname}:${port}`,
-  },
+app.use(express.static("../client/dist"));
+
+server.listen(port, () => {
+  return console.log(`Express is listening at http://${hostname}:${port}`);
 });
+
+  
+//   {
+//   cors: {
+//     origin: "*",
+//     // origin: `http://${hostname}:${port}`,
+//   },
+// });
 
 /**
  * Normalize a port into a number, string, or false.
@@ -38,13 +49,7 @@ function normalizePort(val: string) {
   return false;
 }
 
-io.listen(websocketPort);
-
-app.use(express.static("../client/dist"));
-
-app.listen(port, () => {
-  return console.log(`Express is listening at http://${hostname}:${port}`);
-});
+// io.listen(websocketPort);
 
 io.on("connection", (socket) => {
   socket.on("username", (data) => {
